@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     <link rel="shortcut icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
 
-    <title>2026 東京賞櫻 (v9 視覺修復版)</title>
+    <title>2026 東京賞櫻 (v10 頂部修正版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -25,19 +25,26 @@
             background-color: #F2F2F7;
             -webkit-font-smoothing: antialiased;
             overscroll-behavior-y: none;
-            /* 底部安全距離，避免被 iPhone 橫條擋住 */
             padding-bottom: env(safe-area-inset-bottom);
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
+        /* v10 關鍵修正：Glass Nav 高度與 Padding */
         .glass-nav {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95); /* 稍微不透明一點，避免干擾 */
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(0,0,0,0.05);
-            /* 關鍵修正：頂部增加安全距離 + 額外緩衝 */
-            padding-top: calc(env(safe-area-inset-top) + 10px);
+            /* 強制增加頂部安全距離 + 25px 緩衝 */
+            padding-top: calc(env(safe-area-inset-top) + 25px);
+            padding-bottom: 15px;
+        }
+
+        /* v10 關鍵修正：Main 內容起始高度自動計算 */
+        main {
+            /* 讓內容往下推，避開變高的 Header */
+            padding-top: calc(env(safe-area-inset-top) + 200px); 
         }
 
         .tab-btn { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.5, 1); white-space: nowrap; }
@@ -68,7 +75,7 @@
 </head>
 <body class="text-slate-700" x-data="tripData()" x-init="initApp()">
 
-    <div x-show="showToast" class="fixed top-safe-top right-4 z-[1000] bg-black/70 text-white px-4 py-2 rounded-full text-xs font-bold backdrop-blur-md flex items-center gap-2 toast-msg" style="top: max(20px, env(safe-area-inset-top));" x-cloak>
+    <div x-show="showToast" class="fixed top-safe-top right-4 z-[1000] bg-black/70 text-white px-4 py-2 rounded-full text-xs font-bold backdrop-blur-md flex items-center gap-2 toast-msg" style="top: calc(env(safe-area-inset-top) + 20px);" x-cloak>
         <i class="ph-bold ph-check-circle text-green-400"></i> <span x-text="toastText"></span>
     </div>
 
@@ -155,7 +162,7 @@
         </div>
     </header>
 
-    <main class="pt-[190px]">
+    <main>
         <div class="swiper mySwiper">
             <div class="swiper-wrapper">
                 
