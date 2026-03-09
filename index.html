@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     <link rel="shortcut icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
 
-    <title>2026 東京賞櫻 (v8 旗艦版)</title>
+    <title>2026 東京賞櫻 (v9 視覺修復版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -25,6 +25,7 @@
             background-color: #F2F2F7;
             -webkit-font-smoothing: antialiased;
             overscroll-behavior-y: none;
+            /* 底部安全距離，避免被 iPhone 橫條擋住 */
             padding-bottom: env(safe-area-inset-bottom);
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -35,7 +36,8 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(0,0,0,0.05);
-            padding-top: max(12px, env(safe-area-inset-top));
+            /* 關鍵修正：頂部增加安全距離 + 額外緩衝 */
+            padding-top: calc(env(safe-area-inset-top) + 10px);
         }
 
         .tab-btn { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.5, 1); white-space: nowrap; }
@@ -66,7 +68,7 @@
 </head>
 <body class="text-slate-700" x-data="tripData()" x-init="initApp()">
 
-    <div x-show="showToast" class="fixed top-4 right-4 z-[1000] bg-black/70 text-white px-4 py-2 rounded-full text-xs font-bold backdrop-blur-md flex items-center gap-2 toast-msg" x-cloak>
+    <div x-show="showToast" class="fixed top-safe-top right-4 z-[1000] bg-black/70 text-white px-4 py-2 rounded-full text-xs font-bold backdrop-blur-md flex items-center gap-2 toast-msg" style="top: max(20px, env(safe-area-inset-top));" x-cloak>
         <i class="ph-bold ph-check-circle text-green-400"></i> <span x-text="toastText"></span>
     </div>
 
@@ -119,8 +121,8 @@
         <div x-show="showMoneyModal" class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative" @click.stop>
             <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-slate-800">記一筆 💸</h3><button @click="showMoneyModal = false" class="bg-gray-100 p-2 rounded-full"><i class="ph-bold ph-x"></i></button></div>
             <div class="space-y-3">
-                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">項目名稱</label><input x-model="newMoney.title" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base font-bold text-slate-700"></div>
-                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">金額 (日幣)</label><input x-model="newMoney.amount" type="number" inputmode="numeric" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xl font-mono font-bold text-slate-700"></div>
+                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">項目名稱</label><input x-model="newMoney.title" type="text" placeholder="午餐 / 伴手禮" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base font-bold text-slate-700 outline-none focus:border-blue-500"></div>
+                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">金額 (日幣)</label><input x-model="newMoney.amount" type="number" inputmode="numeric" placeholder="¥" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xl font-mono font-bold text-slate-700 outline-none focus:border-blue-500"></div>
                 <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">分類</label><div class="grid grid-cols-4 gap-2"><button @click="newMoney.cat = 'food'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'food' ? 'bg-orange-100 border-orange-400 text-orange-600' : 'bg-white border-slate-200 text-slate-400'">飲食</button><button @click="newMoney.cat = 'shop'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'shop' ? 'bg-pink-100 border-pink-400 text-pink-600' : 'bg-white border-slate-200 text-slate-400'">購物</button><button @click="newMoney.cat = 'traffic'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'traffic' ? 'bg-blue-100 border-blue-400 text-blue-600' : 'bg-white border-slate-200 text-slate-400'">交通</button><button @click="newMoney.cat = 'other'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'other' ? 'bg-gray-100 border-gray-400 text-gray-600' : 'bg-white border-slate-200 text-slate-400'">其他</button></div></div>
                 <button @click="addMoney()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl mt-2 active:scale-95 transition-transform shadow-md">儲存紀錄</button>
             </div>
@@ -153,7 +155,7 @@
         </div>
     </header>
 
-    <main class="pt-[140px]">
+    <main class="pt-[190px]">
         <div class="swiper mySwiper">
             <div class="swiper-wrapper">
                 
@@ -169,41 +171,10 @@
                 </div>
 
                 <div class="swiper-slide px-4 pb-24">
-                    
-                    <div class="ios-card p-4 mb-6 bg-slate-800 text-white">
-                        <div class="flex items-center gap-2 mb-4">
-                            <i class="ph-fill ph-ticket text-yellow-400 text-xl"></i>
-                            <h3 class="font-bold">票券收納夾</h3>
-                        </div>
-                        <div class="space-y-3">
-                            <template x-for="(val, key) in prepData.ticketsWallet">
-                                <div class="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center">
-                                    <div class="flex-1 mr-2">
-                                        <div class="text-[10px] text-slate-400 uppercase font-bold" x-text="key"></div>
-                                        <input type="text" x-model="prepData.ticketsWallet[key]" @change="saveChecks()" placeholder="輸入代號或網址..." class="bg-transparent w-full text-sm font-mono font-bold outline-none text-white placeholder-slate-600">
-                                    </div>
-                                    <button @click="copyToClipboard(prepData.ticketsWallet[key])" class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center active:scale-95"><i class="ph-bold ph-copy text-slate-300"></i></button>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-
-                    <div class="ios-card p-5 mb-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg">
-                        <div class="flex justify-between items-center mb-6"><div class="text-center"><div class="text-2xl font-bold">TPE</div><div class="text-xs opacity-80">台北</div></div><div class="flex-1 text-center px-4"><i class="ph-fill ph-airplane-tilt text-2xl mb-1"></i><div class="h-0.5 bg-white/30 rounded-full w-full"></div><div class="text-[10px] mt-1 opacity-80">JL0802 / JL0809</div></div><div class="text-center"><div class="text-2xl font-bold">NRT</div><div class="text-xs opacity-80">成田</div></div></div>
-                        <a href="https://digital.jal.co.jp/ssci/identification?lang=zh-Hant" target="_blank" class="block w-full bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center mb-4 hover:bg-white/30 transition-all shadow-md"><div class="font-bold text-lg flex items-center justify-center gap-2"><i class="ph-bold ph-globe-hemisphere-east"></i> JAL 線上報到</div><div class="text-[10px] opacity-80 mt-1">出發前 24 小時開放 • 點擊進入</div></a>
-                        <div class="space-y-2"><div class="flex justify-between items-center bg-white/10 rounded-lg p-2 px-3 backdrop-blur-sm border border-white/10"><div class="text-xs font-bold opacity-90">去程 3/14 (六)</div><div class="font-mono font-bold text-sm">JL 0802</div><div class="text-xs opacity-90">10:55 - 14:55</div></div><div class="flex justify-between items-center bg-white/10 rounded-lg p-2 px-3 backdrop-blur-sm border border-white/10"><div class="text-xs font-bold opacity-90">回程 3/18 (三)</div><div class="font-mono font-bold text-sm">JL 0809</div><div class="text-xs opacity-90">18:05 - 21:10</div></div></div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3 mb-6">
-                        <a href="https://world.jorudan.co.jp/mln/zh-tw/" target="_blank" class="ios-card p-3 flex flex-col items-center justify-center text-center active:scale-95 transition-transform"><i class="ph-duotone ph-train text-2xl text-green-500 mb-1"></i><span class="text-xs font-bold text-slate-700">乘換案內<br>(查電車)</span></a>
-                        <a href="https://www.coinlocker-navi.com/" target="_blank" class="ios-card p-3 flex flex-col items-center justify-center text-center active:scale-95 transition-transform"><i class="ph-duotone ph-locker text-2xl text-blue-500 mb-1"></i><span class="text-xs font-bold text-slate-700">置物櫃<br>導航</span></a>
-                    </div>
-
-                    <div class="ios-card p-4">
-                        <div class="flex items-center gap-2 mb-4"><div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-500"><i class="ph-fill ph-translate"></i></div><h3 class="font-bold text-slate-800">手指日文</h3></div>
-                        <div class="flex bg-slate-100 rounded-lg p-1 mb-4"><button @click="phraseTab = 'food'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'food' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">餐廳</button><button @click="phraseTab = 'shop'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'shop' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">購物</button><button @click="phraseTab = 'help'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'help' ? 'bg-white shadow text-red-500' : 'text-slate-400'">緊急</button></div>
-                        <div class="grid grid-cols-2 gap-2"><template x-for="p in phrases[phraseTab]"><div @click="openPhrase(p, phraseTab)" class="bg-gray-50 border border-gray-100 rounded-xl p-3 active:bg-gray-100 active:scale-95 transition-transform text-center"><div class="text-sm font-bold text-slate-800 truncate" x-text="p.jp"></div><div class="text-[10px] text-slate-500 mt-1 flex justify-center items-center gap-1"><span x-text="p.cn"></span> <i class="ph-bold ph-speaker-high text-pink-400"></i></div></div></template></div>
-                    </div>
+                    <div class="ios-card p-4 mb-6 bg-slate-800 text-white"><div class="flex items-center gap-2 mb-4"><i class="ph-fill ph-ticket text-yellow-400 text-xl"></i><h3 class="font-bold">票券收納夾</h3></div><div class="space-y-3"><template x-for="(val, key) in prepData.ticketsWallet"><div class="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center"><div class="flex-1 mr-2"><div class="text-[10px] text-slate-400 uppercase font-bold" x-text="key"></div><input type="text" x-model="prepData.ticketsWallet[key]" @change="saveChecks()" placeholder="輸入代號或網址..." class="bg-transparent w-full text-sm font-mono font-bold outline-none text-white placeholder-slate-600"></div><button @click="copyToClipboard(prepData.ticketsWallet[key])" class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center active:scale-95"><i class="ph-bold ph-copy text-slate-300"></i></button></div></template></div></div>
+                    <div class="ios-card p-5 mb-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg"><div class="flex justify-between items-center mb-6"><div class="text-center"><div class="text-2xl font-bold">TPE</div><div class="text-xs opacity-80">台北</div></div><div class="flex-1 text-center px-4"><i class="ph-fill ph-airplane-tilt text-2xl mb-1"></i><div class="h-0.5 bg-white/30 rounded-full w-full"></div><div class="text-[10px] mt-1 opacity-80">JL0802 / JL0809</div></div><div class="text-center"><div class="text-2xl font-bold">NRT</div><div class="text-xs opacity-80">成田</div></div></div><a href="https://digital.jal.co.jp/ssci/identification?lang=zh-Hant" target="_blank" class="block w-full bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center mb-4 hover:bg-white/30 transition-all shadow-md"><div class="font-bold text-lg flex items-center justify-center gap-2"><i class="ph-bold ph-globe-hemisphere-east"></i> JAL 線上報到</div><div class="text-[10px] opacity-80 mt-1">出發前 24 小時開放 • 點擊進入</div></a><div class="space-y-2"><div class="flex justify-between items-center bg-white/10 rounded-lg p-2 px-3 backdrop-blur-sm border border-white/10"><div class="text-xs font-bold opacity-90">去程 3/14 (六)</div><div class="font-mono font-bold text-sm">JL 0802</div><div class="text-xs opacity-90">10:55 - 14:55</div></div><div class="flex justify-between items-center bg-white/10 rounded-lg p-2 px-3 backdrop-blur-sm border border-white/10"><div class="text-xs font-bold opacity-90">回程 3/18 (三)</div><div class="font-mono font-bold text-sm">JL 0809</div><div class="text-xs opacity-90">18:05 - 21:10</div></div></div></div>
+                    <div class="grid grid-cols-2 gap-3 mb-6"><a href="https://world.jorudan.co.jp/mln/zh-tw/" target="_blank" class="ios-card p-3 flex flex-col items-center justify-center text-center active:scale-95 transition-transform"><i class="ph-duotone ph-train text-2xl text-green-500 mb-1"></i><span class="text-xs font-bold text-slate-700">乘換案內<br>(查電車)</span></a><a href="https://www.coinlocker-navi.com/" target="_blank" class="ios-card p-3 flex flex-col items-center justify-center text-center active:scale-95 transition-transform"><i class="ph-duotone ph-locker text-2xl text-blue-500 mb-1"></i><span class="text-xs font-bold text-slate-700">置物櫃<br>導航</span></a></div>
+                    <div class="ios-card p-4"><div class="flex items-center gap-2 mb-4"><div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-500"><i class="ph-fill ph-translate"></i></div><h3 class="font-bold text-slate-800">手指日文</h3></div><div class="flex bg-slate-100 rounded-lg p-1 mb-4"><button @click="phraseTab = 'food'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'food' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">餐廳</button><button @click="phraseTab = 'shop'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'shop' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">購物</button><button @click="phraseTab = 'help'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'help' ? 'bg-white shadow text-red-500' : 'text-slate-400'">緊急</button></div><div class="grid grid-cols-2 gap-2"><template x-for="p in phrases[phraseTab]"><div @click="openPhrase(p, phraseTab)" class="bg-gray-50 border border-gray-100 rounded-xl p-3 active:bg-gray-100 active:scale-95 transition-transform text-center"><div class="text-sm font-bold text-slate-800 truncate" x-text="p.jp"></div><div class="text-[10px] text-slate-500 mt-1 flex justify-center items-center gap-1"><span x-text="p.cn"></span> <i class="ph-bold ph-speaker-high text-pink-400"></i></div></div></template></div></div>
                 </div>
 
                 <div class="swiper-slide px-4 pb-24">
@@ -236,31 +207,18 @@
                                 </div>
                             </template>
                         </div>
-                        
                         <template x-if="day.hasOptions"><div class="flex justify-center mb-8"><div class="bg-slate-100 p-1 rounded-xl flex gap-1"><button @click="day.selectedOption = 'A'; $nextTick(() => updateSwiperHeight())" class="px-4 py-2 rounded-lg text-sm font-bold transition-all" :class="day.selectedOption === 'A' ? 'bg-slate-800 text-white shadow' : 'text-slate-400 hover:text-slate-600'" x-text="day.optionALabel"></button><button @click="day.selectedOption = 'B'; $nextTick(() => updateSwiperHeight())" class="px-4 py-2 rounded-lg text-sm font-bold transition-all" :class="day.selectedOption === 'B' ? 'bg-pink-500 text-white shadow' : 'text-slate-400 hover:text-slate-600'" x-text="day.optionBLabel"></button></div></div></template>
-
                         <div class="relative pl-4">
                             <div class="timeline-line"></div>
                             <div class="space-y-6">
                                 <template x-for="(event, eIdx) in (day.hasOptions ? day.options[day.selectedOption] : day.events)" :key="event.time">
                                     <div class="relative pl-10" :id="'event-' + index + '-' + eIdx" x-data="{ expanded: false }">
                                         <div class="absolute left-0 top-0 flex flex-col items-center z-10"><div class="w-12 h-12 rounded-full border-4 border-[#F2F2F7] flex items-center justify-center shadow-sm" :class="getIconColor(event.type)"><i :class="getIconClass(event.type) + ' text-white text-lg'"></i></div></div>
-                                        
-                                        <div class="ios-card overflow-hidden transition-all duration-500" 
-                                             :class="{'active-event-card': isCurrentEvent(index, event)}">
+                                        <div class="ios-card overflow-hidden transition-all duration-500" :class="{'active-event-card': isCurrentEvent(index, event)}">
                                             <div class="p-4" @click="expanded = !expanded; $nextTick(() => updateSwiperHeight())">
-                                                <div class="flex justify-between items-start mb-1">
-                                                    <div class="flex items-center gap-2">
-                                                        <span class="text-xs font-black text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded font-mono" :class="{'text-pink-500 bg-pink-50': isCurrentEvent(index, event)}" x-text="event.time"></span>
-                                                        <template x-if="isCurrentEvent(index, event)">
-                                                            <span class="bg-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">進行中 NOW</span>
-                                                        </template>
-                                                    </div>
-                                                    <template x-if="event.tag"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full" :class="getTagColor(event.tag)" x-text="event.tag"></span></template>
-                                                </div>
+                                                <div class="flex justify-between items-start mb-1"><div class="flex items-center gap-2"><span class="text-xs font-black text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded font-mono" :class="{'text-pink-500 bg-pink-50': isCurrentEvent(index, event)}" x-text="event.time"></span><template x-if="isCurrentEvent(index, event)"><span class="bg-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">進行中 NOW</span></template></div><template x-if="event.tag"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full" :class="getTagColor(event.tag)" x-text="event.tag"></span></template></div>
                                                 <h3 class="text-lg font-bold text-slate-800 mb-1" x-text="event.name"></h3>
                                                 <p class="text-sm text-slate-500 line-clamp-2" x-text="event.desc"></p>
-                                                
                                                 <template x-if="event.taxi"><div class="mt-2"><button @click.stop="openTaxi(event)" class="text-xs font-bold text-black bg-yellow-400 px-3 py-1.5 rounded-lg flex items-center gap-2 active:scale-95 transition-transform"><i class="ph-bold ph-taxi"></i> 給司機看 (Taxi Card)</button></div></template>
                                                 <template x-if="event.luggageInfo"><div class="mt-2 bg-yellow-50 border border-yellow-200 rounded-lg p-2 flex items-start gap-2 text-xs text-yellow-800" @click.stop="expanded = true; $nextTick(() => updateSwiperHeight())"><i class="ph-fill ph-elevator text-lg mt-0.5 text-yellow-600"></i><div><span class="font-bold">🧳 行李/電梯攻略：</span><span x-text="event.luggageInfo.summary"></span></div></div></template>
                                                 <div class="flex justify-center mt-2" x-show="event.restaurants || event.shopping || event.history || event.location || event.transportDetail || event.luggageInfo"><i class="ph-bold ph-caret-down text-slate-300 transition-transform duration-300" :class="{'rotate-180': expanded}"></i></div>
@@ -621,7 +579,7 @@
                                 { 
                                     time: '08:30', period: 'AM', type: 'transport', name: '前往上野', desc: '寄放行李 @ 京成上野。', location: 'Ueno Station', noNav: true,
                                     transportDetail: '🔹路線：大塚 ➔ 上野 (JR山手線)<br>🔹時間：約 10 分鐘。',
-                                    luggageInfo: { summary: '避開地下連通道，走「中央改札」出站走地面。', steps: [{ text: 'JR 上野站下車後，搭電梯至 1F，走「中央改札 (Central Gate)」。' }, { text: '出改札口直走，從「廣小路口」出站，過馬路往右前方走。' }, { text: '看到「京成上野站」的正門，進去左手邊有電梯直達 B1。', link: 'https://www.google.com/maps/search/?api=1&query=Keisei+Ueno+Station+Main+Entrance' }] }
+                                    luggageInfo: { summary: '避開地下連通道，走「中央改札」出站走地面。', steps: [{ text: 'JR 上野站下車後，搭電梯至 1F，走「中央改札 (Central Gate)」。' }, { text: '出改札口直走，從「廣小路口」出站，過馬路往右前方走。' }, { text: '看到「京成上野站」的正門（位於上野公園入口旁），大門進去左手邊有電梯直達 B1 寄物櫃與改札。', link: 'https://www.google.com/maps/search/?api=1&query=Keisei+Ueno+Station+Main+Entrance' }] }
                                 },
                                 { 
                                     time: '09:15', period: 'AM', type: 'activity', name: '淺草雷門', desc: '雷門合照、仲見世通。', location: 'Senso-ji', tag: '經典',
