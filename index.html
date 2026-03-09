@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     
-    <title>2026 東京賞櫻 (v36 滑動復刻版)</title>
+    <title>2026 東京賞櫻 (v37 完美滑動版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -30,14 +30,16 @@
         .ios-card { background: white; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 20px; transition: transform 0.2s; }
         .ios-card:active { transform: scale(0.995); }
         
-        /* Swiper 修正 */
+        /* Swiper Fixes */
         .swiper { width: 100%; height: auto; }
-        .swiper-slide { height: auto; } /* 讓每一頁高度自動適應 */
+        .swiper-slide { height: auto; }
 
-        .tab-btn { transition: all 0.2s; white-space: nowrap; border-radius: 9999px; padding: 8px 16px; font-size: 13px; font-weight: bold; }
+        /* Tabs */
+        .tab-btn { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); white-space: nowrap; border-radius: 9999px; padding: 8px 16px; font-size: 13px; font-weight: bold; }
         .tab-active { background-color: #FF8BA7; color: white; transform: scale(1.05); box-shadow: 0 4px 12px rgba(255, 139, 167, 0.3); }
         .tab-inactive { background-color: white; color: #8E8E93; border: 1px solid #F2F2F7; }
-
+        
+        /* Chat */
         .chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 20px; font-size: 14px; line-height: 1.6; word-wrap: break-word; }
         .chat-user { background: #3B82F6; color: white; border-bottom-right-radius: 4px; align-self: flex-end; margin-left: auto; }
         .chat-ai { background: #F3F4F6; color: #1F2937; border-bottom-left-radius: 4px; align-self: flex-start; margin-right: auto; }
@@ -92,7 +94,7 @@
             <div class="flex-1 overflow-y-auto p-4 bg-white flex flex-col" id="chatContainer">
                 <div class="flex-1 space-y-4 min-h-[100px]">
                     <div x-show="chatHistory.length === 0" class="text-center text-slate-400 text-xs mt-4">嗨！我是導遊。<br>試著問我：「明天去哪裡？」</div>
-                    <template x-for="msg in chatHistory"><div class="flex flex-col w-full"><div class="chat-bubble shadow-sm markdown-body" :class="msg.role === 'user' ? 'chat-user' : 'chat-ai'" x-html="renderMarkdown(msg.content)"></div></div></template>
+                    <template x-for="msg in chatHistory"><div class="flex flex-col w-full"><div class="chat-bubble shadow-sm markdown-body" :class="[msg.role === 'user' ? 'chat-user' : 'chat-ai', msg.isError ? 'chat-error' : '']" x-html="renderMarkdown(msg.content)"></div></div></template>
                     <div x-show="isAiThinking" class="chat-bubble chat-ai w-16 flex items-center justify-center"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
                 </div>
             </div>
@@ -113,18 +115,19 @@
                     <div class="text-left"><div class="text-[10px] text-slate-400 font-bold" x-text="getCurrentWeather().loc"></div><div class="text-sm font-bold text-slate-800" x-text="getCurrentWeather().temp"></div></div>
                 </div>
             </div>
-            <div class="flex space-x-2 overflow-x-auto no-scrollbar pb-2">
-                <button @click="slideTo(0)" class="tab-btn" :class="activeIndex === 0 ? 'tab-active' : 'tab-inactive'">行前</button>
-                <button @click="slideTo(1)" class="tab-btn" :class="activeIndex === 1 ? 'tab-active' : 'tab-inactive'">資訊</button>
-                <button @click="slideTo(2)" class="tab-btn" :class="activeIndex === 2 ? 'tab-active' : 'tab-inactive'">記帳</button>
+            <div class="flex space-x-2 overflow-x-auto no-scrollbar pb-2" id="tabContainer">
+                <button @click="slideTo(0)" id="tab-0" class="tab-btn flex-shrink-0" :class="activeIndex === 0 ? 'tab-active' : 'tab-inactive'">行前</button>
+                <button @click="slideTo(1)" id="tab-1" class="tab-btn flex-shrink-0" :class="activeIndex === 1 ? 'tab-active' : 'tab-inactive'">資訊</button>
+                <button @click="slideTo(2)" id="tab-2" class="tab-btn flex-shrink-0" :class="activeIndex === 2 ? 'tab-active' : 'tab-inactive'">記帳</button>
                 <template x-for="(day, index) in days" :key="index">
-                    <button @click="slideTo(index + 3)" class="tab-btn" :class="activeIndex === (index + 3) ? 'tab-active' : 'tab-inactive'"><span x-text="day.shortTitle"></span></button>
+                    <button @click="slideTo(index + 3)" :id="'tab-' + (index + 3)" class="tab-btn flex-shrink-0" :class="activeIndex === (index + 3) ? 'tab-active' : 'tab-inactive'"><span x-text="day.shortTitle"></span></button>
                 </template>
             </div>
         </div>
     </header>
 
-    <main class="px-0"> <div class="swiper mySwiper">
+    <main class="px-0">
+        <div class="swiper mySwiper">
             <div class="swiper-wrapper">
                 
                 <div class="swiper-slide px-4">
@@ -137,10 +140,28 @@
                 </div>
 
                 <div class="swiper-slide px-4">
-                    <div class="ios-card p-4 mb-6 bg-slate-800 text-white"><div class="flex items-center gap-2 mb-4"><i class="ph-fill ph-ticket text-yellow-400 text-xl"></i><h3 class="font-bold">票券收納夾</h3></div><div class="space-y-3"><template x-for="(val, key) in prepData.ticketsWallet"><div class="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center"><div class="flex-1 mr-2"><div class="text-[10px] text-slate-400 uppercase font-bold" x-text="key"></div><input type="text" x-model="prepData.ticketsWallet[key]" @change="saveChecks()" placeholder="輸入代號或網址..." class="bg-transparent w-full text-sm font-mono font-bold outline-none text-white placeholder-slate-600"></div><button @click="copyToClipboard(prepData.ticketsWallet[key])" class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center active:scale-95"><i class="ph-bold ph-copy text-slate-300"></i></button></div></template></div></div>
-                    <div class="ios-card p-5 mb-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg"><div class="flex justify-between items-center mb-6"><div class="text-center"><div class="text-2xl font-bold">TPE</div><div class="text-xs opacity-80">台北</div></div><div class="flex-1 text-center px-4"><i class="ph-fill ph-airplane-tilt text-2xl mb-1"></i><div class="h-0.5 bg-white/30 rounded-full w-full"></div><div class="text-[10px] mt-1 opacity-80">JL0802 / JL0809</div></div><div class="text-center"><div class="text-2xl font-bold">NRT</div><div class="text-xs opacity-80">成田</div></div></div><a href="https://digital.jal.co.jp/ssci/identification?lang=zh-Hant" target="_blank" class="block w-full bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center mb-4 hover:bg-white/30 transition-all shadow-md"><div class="font-bold text-lg flex items-center justify-center gap-2"><i class="ph-bold ph-globe-hemisphere-east"></i> JAL 線上報到</div><div class="text-[10px] opacity-80 mt-1">出發前 24 小時開放 • 點擊進入</div></a><div class="space-y-2"><div class="flex justify-between items-center bg-white/10 rounded-lg p-2 px-3 backdrop-blur-sm border border-white/10"><div class="text-xs font-bold opacity-90">去程 3/14 (六)</div><div class="font-mono font-bold text-sm">JL 0802</div><div class="text-xs opacity-90">10:55 - 14:55</div></div><div class="flex justify-between items-center bg-white/10 rounded-lg p-2 px-3 backdrop-blur-sm border border-white/10"><div class="text-xs font-bold opacity-90">回程 3/18 (三)</div><div class="font-mono font-bold text-sm">JL 0809</div><div class="text-xs opacity-90">18:05 - 21:10</div></div></div></div>
-                    <div class="grid grid-cols-2 gap-3 mb-6"><a href="https://world.jorudan.co.jp/mln/zh-tw/" target="_blank" class="ios-card p-3 flex flex-col items-center justify-center text-center active:scale-95 transition-transform"><i class="ph-duotone ph-train text-2xl text-green-500 mb-1"></i><span class="text-xs font-bold text-slate-700">乘換案內</span></a><a href="https://www.coinlocker-navi.com/" target="_blank" class="ios-card p-3 flex flex-col items-center justify-center text-center active:scale-95 transition-transform"><i class="ph-duotone ph-locker text-2xl text-blue-500 mb-1"></i><span class="text-xs font-bold text-slate-700">置物櫃</span></a></div>
-                    <div class="ios-card p-4"><div class="flex items-center gap-2 mb-4"><div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-500"><i class="ph-fill ph-translate"></i></div><h3 class="font-bold text-slate-800">手指日文</h3></div><div class="flex bg-slate-100 rounded-lg p-1 mb-4"><button @click="phraseTab = 'food'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'food' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">餐廳</button><button @click="phraseTab = 'shop'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'shop' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">購物</button><button @click="phraseTab = 'help'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'help' ? 'bg-white shadow text-red-500' : 'text-slate-400'">緊急</button></div><div class="grid grid-cols-2 gap-2"><template x-for="p in phrases[phraseTab]"><div @click="openPhrase(p, phraseTab)" class="bg-gray-50 border border-gray-100 rounded-xl p-3 active:bg-gray-100 active:scale-95 transition-transform text-center"><div class="text-sm font-bold text-slate-800 truncate" x-text="p.jp"></div><div class="text-[10px] text-slate-500 mt-1 flex justify-center items-center gap-1"><span x-text="p.cn"></span> <i class="ph-bold ph-speaker-high text-pink-400"></i></div></div></template></div></div>
+                    <div class="ios-card p-4 mb-6 bg-slate-800 text-white"><div class="flex items-center gap-2 mb-4"><i class="ph-fill ph-ticket text-yellow-400 text-xl"></i><h3 class="font-bold">票券收納夾</h3></div><div class="space-y-3"><template x-for="(val, key) in prepData.ticketsWallet"><div class="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center"><div class="flex-1 mr-2"><div class="text-[10px] text-slate-400 uppercase font-bold" x-text="key"></div><input type="text" x-model="prepData.ticketsWallet[key]" @change="saveChecks()" placeholder="輸入代號..." class="bg-transparent w-full text-sm font-mono font-bold outline-none text-white placeholder-slate-600"></div><button @click="copyToClipboard(prepData.ticketsWallet[key])" class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center active:scale-95"><i class="ph-bold ph-copy text-slate-300"></i></button></div></template></div></div>
+                    <div class="ios-card p-5 mb-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg"><div class="flex justify-between items-center mb-6"><div class="text-center"><div class="text-2xl font-bold">TPE</div><div class="text-xs opacity-80">台北</div></div><div class="flex-1 text-center px-4"><i class="ph-fill ph-airplane-tilt text-2xl mb-1"></i><div class="h-0.5 bg-white/30 rounded-full w-full"></div><div class="text-[10px] mt-1 opacity-80">JL0802 / JL0809</div></div><div class="text-center"><div class="text-2xl font-bold">NRT</div><div class="text-xs opacity-80">成田</div></div></div><a href="https://digital.jal.co.jp/ssci/identification?lang=zh-Hant" target="_blank" class="block w-full bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center mb-4 hover:bg-white/30 transition-all shadow-md"><div class="font-bold text-lg flex items-center justify-center gap-2"><i class="ph-bold ph-globe-hemisphere-east"></i> JAL 線上報到</div><div class="text-[10px] opacity-80 mt-1">出發前 24 小時開放 • 點擊進入</div></a></div><div class="grid grid-cols-2 gap-3 mb-6"><a href="https://world.jorudan.co.jp/mln/zh-tw/" target="_blank" class="ios-card p-3 flex flex-col items-center justify-center text-center active:scale-95 transition-transform"><i class="ph-duotone ph-train text-2xl text-green-500 mb-1"></i><span class="text-xs font-bold text-slate-700">乘換案內</span></a><a href="https://www.coinlocker-navi.com/" target="_blank" class="ios-card p-3 flex flex-col items-center justify-center text-center active:scale-95 transition-transform"><i class="ph-duotone ph-locker text-2xl text-blue-500 mb-1"></i><span class="text-xs font-bold text-slate-700">置物櫃</span></a></div>
+                    
+                    <div class="ios-card p-4">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-500"><i class="ph-fill ph-translate"></i></div>
+                            <h3 class="font-bold text-slate-800">手指日文</h3>
+                        </div>
+                        <div class="flex bg-slate-100 rounded-lg p-1 mb-4">
+                            <button @click="phraseTab = 'food'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'food' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">餐廳</button>
+                            <button @click="phraseTab = 'shop'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'shop' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">購物</button>
+                            <button @click="phraseTab = 'help'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'help' ? 'bg-white shadow text-red-500' : 'text-slate-400'">緊急</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <template x-for="p in phrases[phraseTab]">
+                                <div @click="openPhrase(p, phraseTab)" class="bg-gray-50 border border-gray-100 rounded-xl p-3 active:bg-gray-100 active:scale-95 transition-transform text-center">
+                                    <div class="text-sm font-bold text-slate-800 truncate" x-text="p.jp"></div>
+                                    <div class="text-[10px] text-slate-500 mt-1 flex justify-center items-center gap-1"><span x-text="p.cn"></span> <i class="ph-bold ph-speaker-high text-pink-400"></i></div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="swiper-slide px-4">
@@ -165,8 +186,6 @@
                                                 <h3 class="text-lg font-bold text-slate-800 mb-1" x-text="event.name"></h3>
                                                 <p class="text-sm text-slate-500 line-clamp-2" x-text="event.desc"></p>
                                                 <template x-if="event.taxi"><div class="mt-2"><button @click.stop="openTaxi(event)" class="text-xs font-bold text-black bg-yellow-400 px-3 py-1.5 rounded-lg flex items-center gap-2 active:scale-95 transition-transform"><i class="ph-bold ph-taxi"></i> 給司機看 (Taxi Card)</button></div></template>
-                                                <template x-if="event.luggageInfo"><div class="mt-2 bg-yellow-50 border border-yellow-200 rounded-lg p-2 flex items-start gap-2 text-xs text-yellow-800" @click.stop="expanded = true; $nextTick(() => updateSwiperHeight())"><i class="ph-fill ph-elevator text-lg mt-0.5 text-yellow-600"></i><div><span class="font-bold">🧳 行李/電梯攻略：</span><span x-text="event.luggageInfo.summary"></span></div></div></template>
-                                                <div class="flex justify-center mt-2" x-show="event.restaurants || event.shopping || event.history || event.location || event.transportDetail || event.luggageInfo"><i class="ph-bold ph-caret-down text-slate-300 transition-transform duration-300" :class="{'rotate-180': expanded}"></i></div>
                                             </div>
                                             <div class="bg-slate-50 border-t border-slate-100 text-sm expand-content" :class="{'expanded': expanded}">
                                                 <div class="p-4 space-y-4">
@@ -194,179 +213,6 @@
     <div x-show="showTaxiModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="showTaxiModal = false"><div class="bg-white w-full h-auto max-w-md rounded-3xl p-8 text-center shadow-2xl relative"><button @click="showTaxiModal = false" class="absolute top-6 right-6 bg-gray-100 p-3 rounded-full"><i class="ph-bold ph-x text-xl"></i></button><div class="mb-6"><div class="inline-block bg-yellow-400 text-black px-4 py-1 rounded-full text-sm font-bold mb-2">TAXI CARD</div><p class="text-slate-400 text-xs">請將此畫面出示給司機看</p></div><div class="space-y-6"><div class="text-left bg-slate-50 p-4 rounded-xl border border-slate-100"><p class="text-xs text-slate-400 mb-1">給司機的話：</p><p class="text-lg font-bold text-slate-800">運転手さん、ここまでお願いします。</p></div><div><p class="text-xs text-slate-400 mb-2">目的地</p><h2 class="text-3xl font-black text-slate-900 leading-tight mb-4" x-text="currentTaxi.jpName"></h2><div class="bg-slate-100 p-4 rounded-xl"><p class="text-lg font-bold text-slate-700 font-mono" x-text="currentTaxi.address"></p></div></div></div><button @click="speak(currentTaxi.address)" class="mt-8 w-full bg-yellow-400 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-md"><i class="ph-fill ph-speaker-high text-xl"></i> 唸出地址</button></div></div>
     <div x-show="showAddModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" style="display: none;" @click.self="showAddModal = false"><div class="bg-white w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl relative animate-[fadeIn_0.2s_ease-out]"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-slate-800">新增購物項目</h3><button @click="showAddModal = false" class="bg-gray-100 p-2 rounded-full active:bg-gray-200"><i class="ph-bold ph-x"></i></button></div><div class="space-y-4"><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">類別</label><select x-model="newItem.cat" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-orange-400"><template x-for="(items, category) in prepData.shopping" :key="category"><option :value="category" x-text="category"></option></template></select></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">商品名稱</label><input x-model="newItem.name" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-orange-400" placeholder="例如: 抹茶粉"></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">備註 (選填)</label><input x-model="newItem.desc" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm text-slate-500 outline-none focus:border-orange-400" placeholder="數量 / 規格"></div><button @click="addItem()" class="w-full bg-orange-400 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-orange-200 active:scale-95 transition-transform mt-2">確認新增</button></div></div></div>
     <div x-show="showMoneyModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" style="display: none;" @click.self="showMoneyModal = false"><div class="bg-white w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl relative animate-[fadeIn_0.2s_ease-out]"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-slate-800">記一筆 💸</h3><button @click="showMoneyModal = false" class="bg-gray-100 p-2 rounded-full active:bg-gray-200"><i class="ph-bold ph-x"></i></button></div><div class="space-y-3"><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">項目名稱</label><input x-model="newMoney.title" type="text" placeholder="午餐 / 伴手禮" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base font-bold text-slate-700 outline-none focus:border-blue-500"></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">金額 (日幣)</label><input x-model="newMoney.amount" type="number" inputmode="numeric" placeholder="¥" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xl font-mono font-bold text-slate-700 outline-none focus:border-blue-500"></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">分類</label><div class="grid grid-cols-4 gap-2"><button @click="newMoney.cat = 'food'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'food' ? 'bg-orange-100 border-orange-400 text-orange-600' : 'bg-white border-slate-200 text-slate-400'">飲食</button><button @click="newMoney.cat = 'shop'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'shop' ? 'bg-pink-100 border-pink-400 text-pink-600' : 'bg-white border-slate-200 text-slate-400'">購物</button><button @click="newMoney.cat = 'traffic'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'traffic' ? 'bg-blue-100 border-blue-400 text-blue-600' : 'bg-white border-slate-200 text-slate-400'">交通</button><button @click="newMoney.cat = 'other'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'other' ? 'bg-gray-100 border-gray-400 text-gray-600' : 'bg-white border-slate-200 text-slate-400'">其他</button></div></div><button @click="addMoney()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl mt-2 active:scale-95 transition-transform shadow-md">儲存紀錄</button></div></div></div>
-
-    <script type="application/json" id="safe-data-days">
-    [
-        {
-            "shortTitle": "D1 3/14(六)", "title": "Day 1: 新宿之夜", "hotel": "APA Hotel Shinjuku-Gyoemmae",
-            "events": [
-                { "time": "14:55", "period": "PM", "type": "flight", "name": "抵達成田機場", "desc": "JL0802 降落 T2。", "location": "Narita Airport T2", "noNav": true },
-                { 
-                    "time": "16:20", "period": "PM", "type": "transport", "name": "前往市區", "desc": "搭乘 N'EX 成田特快直達新宿。", "location": "JR Shinjuku Station",
-                    "transportDetail": "🔹路線：成田機場 T2 ➔ 新宿站 (JR)<br>🔹時間：約 80 分鐘 (直達)<br>🔹票券：建議買來回票 (N'EX 東京去回車票) 較划算。<br>🔹月台：跟著「JR線」紅色指標走，通常在 B1。",
-                    "luggageInfo": { "summary": "推薦走「新南改札 (New South Gate)」搭計程車，全程有電梯！", "steps": [{ "text": "N'EX 下車後，月台上有電梯直達「新南改札 (New South Gate)」。" }, { "text": "出改札後，您已在 Busta 新宿 2F，搭手扶梯或電梯上 3F 即是計程車乘車處。", "link": "https://www.google.com/maps/search/?api=1&query=Shinjuku+Expressway+Bus+Terminal+Taxi+Stand" }] }
-                },
-                { 
-                    "time": "18:15", "period": "PM", "type": "hotel", "name": "Check-in", "desc": "建議從新宿站搭計程車前往飯店 (約 ¥1000-1200)。", "location": "APA Hotel Shinjuku-Gyoemmae",
-                    "taxi": { "jpName": "APAホテル 新宿御苑前", "address": "東京都新宿区新宿2-2-8" }
-                },
-                { 
-                    "time": "19:00", "period": "PM", "type": "food", "name": "新宿晚餐", "desc": "第一晚吃好點！", "location": "Shinjuku", "tag": "推薦",
-                    "restaurants": [ { "name": "Udon Shin (慎)", "dish": "奶油培根烏龍麵", "area": "Shinjuku", "price": "1500-2500", "queue": "1.5-2.5小時" }, { "name": "叙叙苑 (新宿)", "dish": "壺漬牛排", "area": "Shinjuku", "price": "8000-12000", "queue": "建議預約" }, { "name": "風雲兒", "dish": "沾麵", "area": "Shinjuku", "price": "1000-1500", "queue": "30-50分" } ]
-                },
-                {
-                    "time": "21:00", "period": "PM", "type": "activity", "name": "新宿採買", "desc": "補給飲料零食。", "location": "Kabukicho",
-                    "shopping": [ { "name": "唐吉訶德 (歌舞伎町)", "items": "24hr 雜貨" }, { "name": "松本清 (新宿東口)", "items": "藥妝" } ]
-                }
-            ]
-        },
-        {
-            "shortTitle": "D2 3/15(日)", "title": "Day 2: 箱根溫泉 (早發)", "hotel": "Hakone Kowakudani Onsen Mizunoto",
-            "events": [
-                { 
-                    "time": "09:00", "period": "AM", "type": "transport", "name": "新宿出發", "desc": "已預訂浪漫特快 (GSE/MSE)。", "location": "Shinjuku Station", "tag": "需預約",
-                    "transportDetail": "🔹路線：新宿(小田急) ➔ 箱根湯本<br>🔹時間：09:00 - 10:15<br>🔹提醒：周遊券包含基本運費，特急券需另購。",
-                    "luggageInfo": { "summary": "請搭計程車至「新宿西口 (地上層) 小田急百貨前」。", "steps": [{ "text": "這是最強攻略：請司機停在「新宿西口地上 (Odakyu Department Store 1F)」。", "link": "https://www.google.com/maps/search/?api=1&query=Shinjuku+Station+West+Exit+Odakyu" }, { "text": "下車處直走即是「小田急線 西口地上改札」。" }, { "text": "浪漫特快月台就在 1 樓，完全沒有樓梯，直推行李上車！" }] }
-                },
-                { 
-                    "time": "10:15", "period": "AM", "type": "transport", "name": "抵達箱根湯本", "desc": "轉乘登山電車。", "location": "Hakone-Yumoto Station", "noNav": true,
-                    "transportDetail": "🔹路線：箱根湯本 ➔ 小涌谷 (箱根登山電車)<br>🔹時間：約 35 分鐘。<br>🔹Tag: <span class=\"bg-orange-100 text-orange-600 px-1 rounded text-[10px]\">周遊券OK</span>"
-                },
-                { 
-                    "time": "11:10", "period": "AM", "type": "hotel", "name": "寄放行李", "desc": "小涌谷站寄放行李。", "location": "Hakone Mizunoto", "noNav": true,
-                    "transportDetail": "🔹飯店就在小涌谷站對面，過馬路即達。<br>🔹寄放完行李後，輕裝出發去吃飯！"
-                },
-                { 
-                    "time": "11:30", "period": "AM", "type": "food", "name": "強羅午餐", "desc": "前往強羅吃名店。", "location": "Gora", "tag": "必吃",
-                    "restaurants": [{"name":"田村銀勝亭", "dish":"豆腐豬排煮", "area":"Gora", "price":"2000-3000", "queue":"30-60分(抽號)"}],
-                    "transportDetail": "🔹路線：小涌谷 ➔ 強羅 (登山電車)<br>🔹Tag: <span class=\"bg-orange-100 text-orange-600 px-1 rounded text-[10px]\">周遊券OK</span>"
-                },
-                { 
-                    "time": "13:30", "period": "PM", "type": "activity", "name": "雕刻之森", "desc": "戶外美術館。", "location": "Hakone Open-Air Museum", "tag": "推薦",
-                    "history": "日本首座戶外美術館。", "tips": "憑周遊券門票可折抵 ¥200。",
-                    "transportDetail": "🔹路線：強羅 ➔ 雕刻之森 (步行或電車一站)<br>🔹Tag: <span class=\"bg-orange-100 text-orange-600 px-1 rounded text-[10px]\">周遊券OK</span>"
-                },
-                { 
-                    "time": "16:30", "period": "PM", "type": "hotel", "name": "溫泉 Check-in", "desc": "享受旅館設施與晚餐。", "location": "Hakone Mizunoto",
-                    "taxi": { "jpName": "箱根小涌谷温泉 水の音", "address": "神奈川県足柄下郡箱根町小涌谷492-23" }
-                }
-            ]
-        },
-        {
-            "shortTitle": "D3 3/16(一)", "title": "Day 3: 海盜船", "hotel": "APA Hotel Yamanote Otsuka Eki Tower",
-            "events": [
-                {
-                    "time": "08:30", "period": "AM", "type": "luggage", "name": "托運大行李", "desc": "請將行李交給飯店櫃檯寄至箱根湯本站。", "location": "Hakone Mizunoto",
-                    "tips": "請在 10:00 前辦理完畢。告知櫃檯「Delivery to Hakone-Yumoto Station」。出示周遊券每件減免 100 日幣。"
-                },
-                { 
-                    "time": "09:30", "period": "AM", "type": "activity", "name": "大涌谷", "desc": "纜車、黑蛋、富士山。", "location": "Owakudani",
-                    "transportDetail": "🔹路線：強羅 ➔ 早雲山 ➔ 大涌谷<br>🔹Tag: <span class=\"bg-orange-100 text-orange-600 px-1 rounded text-[10px]\">周遊券OK</span>"
-                },
-                { 
-                    "time": "11:00", "period": "AM", "type": "activity", "name": "海盜船 & 神社", "desc": "桃源台 ➔ 元箱根。", "location": "Togendai",
-                    "transportDetail": "🔹路線：大涌谷 ➔ 桃源台 ➔ 元箱根港<br>🔹Tag: <span class=\"bg-orange-100 text-orange-600 px-1 rounded text-[10px]\">周遊券OK</span>"
-                },
-                { 
-                    "time": "12:30", "period": "PM", "type": "food", "name": "湖畔午餐", "desc": "湖景餐廳。", "location": "Moto-Hakone",
-                    "restaurants": [ { "name": "Bakery & Table", "dish": "米粉咖哩麵包", "area": "Hakone", "price":"1500-2000", "queue":"1樓買麵包/2樓內用" }, { "name": "La Terrazza", "dish": "窯烤披薩", "area": "Hakone", "price":"2000-3000", "queue":"20-40分" } ]
-                },
-                { 
-                    "time": "14:30", "period": "PM", "type": "luggage", "name": "回東京", "desc": "取行李 ➔ 浪漫特快。", "location": "Hakone Yumoto Station",
-                    "transportDetail": "🔹步驟1：元箱根港 ➔ 箱根湯本 (箱根登山巴士 H線/K線)<br>🔹步驟2：<b>在湯本站取行李</b> (Carry Service 櫃檯)<br>🔹步驟3：箱根湯本 ➔ 新宿 (浪漫特快)<br>🔹步驟4：新宿 ➔ 大塚 (JR山手線)",
-                    "luggageInfo": { "summary": "新宿轉乘大魔王關卡，請走「南口」轉 JR。", "steps": [{ "text": "浪漫特快抵達新宿後，往車頭方向走，搭電梯上樓至「南口改札」。" }, { "text": "出小田急南口改札後，正對面就是「JR 新宿站 南口」。" }, { "text": "進 JR 後，尋找「山手線 (14/15月台)」的電梯（通常在月台中央）。" }, { "text": "抵達大塚站後，APA 飯店在「北口」，有電梯下樓。" }] }
-                },
-                { 
-                    "time": "18:30", "period": "PM", "type": "food", "name": "大塚晚餐", "desc": "Bongo 建議外帶。", "location": "Otsuka Station", "tag": "必吃",
-                    "restaurants": [ { "name": "Onigiri Bongo", "dish": "筋子+鮭魚飯糰", "area": "Otsuka", "price":"1000-1500", "queue":"2-4小時(建議外帶)" }, { "name": "鳴龍", "dish": "擔擔麵", "area": "Otsuka", "price":"1000-1500", "queue":"60-90分" }, { "name": "天下壽司", "dish": "迴轉壽司", "area": "Otsuka", "price":"1500-2500", "queue":"10-20分" } ],
-                    "taxi": { "jpName": "APAホテル 山手大塚駅タワー", "address": "東京都豊島区南大塚3-31-10" }
-                }
-            ]
-        },
-        {
-            "shortTitle": "D4 3/17(二)", "title": "Day 4: 青山燒肉", "hotel": "APA Hotel Yamanote Otsuka Eki Tower",
-            "events": [
-                { 
-                    "time": "09:30", "period": "AM", "type": "activity", "name": "明治神宮", "desc": "市區森林浴。", "location": "Meiji Jingu",
-                    "transportDetail": "🔹路線：大塚 ➔ 原宿 (JR山手線)"
-                },
-                { 
-                    "time": "11:00", "period": "AM", "type": "activity", "name": "原宿逛街", "desc": "表參道、竹下通。", "location": "Harajuku",
-                    "shopping": [ { "name": "@cosme TOKYO", "items": "最新美妝" }, { "name": "KIDDY LAND", "items": "玩具" }, { "name": "Human Made", "items": "潮牌" } ]
-                },
-                { 
-                    "time": "12:00", "period": "PM", "type": "food", "name": "原宿午餐", "desc": "吃七分飽。", "location": "Harajuku",
-                    "restaurants": [ { "name": "AFURI", "dish": "柚子鹽拉麵", "area": "Harajuku", "price":"1200-1500", "queue":"30-50分" }, { "name": "舞泉豬排", "dish": "黑豚炸豬排", "area": "Omotesando", "price":"2000-3000", "queue":"15-30分" }, { "name": "Red Rock", "dish": "烤牛丼", "area": "Harajuku", "price":"1500-2000", "queue":"30-40分" } ]
-                },
-                { 
-                    "time": "14:30", "period": "PM", "type": "activity", "name": "SHIBUYA SKY", "desc": "澀谷展望台。", "location": "SHIBUYA SKY", "tag": "需預約", "tips": "頂樓風大，禁止攜帶腳架、帽子。",
-                    "transportDetail": "🔹路線：原宿 ➔ 澀谷 (JR山手線，1站)"
-                },
-                { 
-                    "time": "17:00", "period": "PM", "type": "food", "name": "Yoroniku 南青山", "desc": "燒肉界最高殿堂。", "location": "Yoroniku Minami Aoyama", "tag": "需搶位",
-                    "restaurants": [ { "name": "よろにく 南青山", "dish": "絲綢里肌/松露壽喜燒", "area": "Minami Aoyama", "price":"15000-20000", "queue":"完全預約制" } ],
-                    "transportDetail": "🔹路線：澀谷 ➔ 南青山 (搭乘計程車約 10 分鐘，費用約 ¥1000)。",
-                    "taxi": { "jpName": "よろにく 南青山", "address": "東京都港区南青山6-6-22" }
-                },
-                {
-                    "time": "19:30", "period": "PM", "type": "activity", "name": "東京鐵塔 & 芝公園", "desc": "飯後最浪漫的散步。", "location": "Prince Shiba Park", "tag": "夜景",
-                    "transportDetail": "🔹路線：從餐廳直接搭計程車最順 (約 15 分鐘)。",
-                    "taxi": { "jpName": "東京タワー (芝公園)", "address": "東京都港区芝公園4-2-8" }
-                },
-                {
-                    "time": "20:30", "period": "PM", "type": "transport", "name": "返回飯店", "desc": "大江戶線 ➔ 大塚。", "location": "Otsuka Station", "noNav": true
-                }
-            ]
-        },
-        {
-            "shortTitle": "D5 3/18(三)", "title": "Day 5: 淺草或賞櫻", "hotel": "Sweet Home",
-            "hasOptions": true, "selectedOption": "A", "optionALabel": "方案A: 淺草雷門", "optionBLabel": "方案B: 千鳥之淵",
-            "options": {
-                "A": [
-                    { 
-                        "time": "08:30", "period": "AM", "type": "transport", "name": "前往上野", "desc": "寄放行李 @ 京成上野。", "location": "Ueno Station", "noNav": true,
-                        "transportDetail": "🔹路線：大塚 ➔ 上野 (JR山手線)<br>🔹時間：約 10 分鐘。",
-                        "luggageInfo": { "summary": "避開地下連通道，走「中央改札」出站走地面。", "steps": [{ "text": "JR 上野站下車後，搭電梯至 1F，走「中央改札 (Central Gate)」。" }, { "text": "出改札口直走，從「廣小路口」出站，過馬路往右前方走。" }, { "text": "看到「京成上野站」的正門（位於上野公園入口旁），大門進去左手邊有電梯直達 B1 寄物櫃與改札。", "link": "https://www.google.com/maps/search/?api=1&query=Keisei+Ueno+Station+Main+Entrance" }] }
-                    },
-                    { 
-                        "time": "09:15", "period": "AM", "type": "activity", "name": "淺草雷門", "desc": "雷門合照、仲見世通。", "location": "Senso-ji", "tag": "經典",
-                        "transportDetail": "🔹路線：上野 ➔ 淺草 (東京地鐵銀座線)"
-                    },
-                    { 
-                        "time": "11:30", "period": "AM", "type": "food", "name": "上野午餐", "desc": "最後一餐。", "location": "Ueno",
-                        "restaurants": [ { "name": "名代 宇奈杜", "dish": "鰻魚飯", "area": "Ueno", "price":"1500-2500", "queue":"30-50分" }, { "name": "鴨 to 蔥", "dish": "鴨肉拉麵", "area": "Ueno", "price":"1000-1500", "queue":"40-60分" }, { "name": "淺草炸牛排", "dish": "石板炸牛排", "area": "Asakusa", "price":"2000-3000", "queue":"30-60分" } ]
-                    },
-                    { 
-                        "time": "12:30", "period": "PM", "type": "sakura", "name": "上野採買", "desc": "阿美橫丁。", "location": "Ameyoko", "tag": "賞櫻點",
-                        "shopping": [ { "name": "二木的菓子", "items": "零食伴手禮" }, { "name": "OS Drug (上野店)", "items": "便宜藥妝" }, { "name": "多慶屋", "items": "雜貨" }, { "name": "ABC-Mart", "items": "球鞋" } ]
-                    },
-                    { "time": "14:40", "period": "PM", "type": "transport", "name": "Skyliner", "desc": "前往機場。", "location": "Keisei Ueno Station", "transportDetail": "🔹路線：京成上野 ➔ 成田機場 (Skyliner)<br>🔹時間：約 45 分鐘 (直達)。" },
-                    { "time": "18:05", "period": "PM", "type": "flight", "name": "JL0809 起飛", "desc": "回家囉。", "location": "Narita Airport", "noNav": true }
-                ],
-                "B": [
-                    { 
-                        "time": "08:30", "period": "AM", "type": "transport", "name": "前往上野", "desc": "寄放行李 @ 京成上野。", "location": "Ueno Station", "noNav": true,
-                        "luggageInfo": { "summary": "避開地下連通道，走「中央改札」出站走地面。", "steps": [{ "text": "JR 上野站下車後，搭電梯至 1F，走「中央改札 (Central Gate)」。" }, { "text": "出改札口直走，從「廣小路口」出站，過馬路往右前方走。" }, { "text": "看到「京成上野站」的正門，進去左手邊有電梯直達 B1。", "link": "https://www.google.com/maps/search/?api=1&query=Keisei+Ueno+Station+Main+Entrance" }] }
-                    },
-                    { 
-                        "time": "09:30", "period": "AM", "type": "sakura", "name": "千鳥之淵", "desc": "皇居護城河櫻花隧道。", "location": "Chidorigafuchi", "tag": "賞櫻備案",
-                        "transportDetail": "🔹路線：京成上野 ➔ 九段下 (東京地鐵)<br>🔹轉乘：搭乘「銀座線」至日本橋，轉「東西線」至九段下。"
-                    },
-                    { 
-                        "time": "11:30", "period": "AM", "type": "food", "name": "上野午餐", "desc": "回到上野用餐。", "location": "Ueno",
-                        "restaurants": [ { "name": "名代 宇奈杜", "dish": "鰻魚飯", "area": "Ueno", "price":"1500-2500", "queue":"30-50分" }, { "name": "鴨 to 蔥", "dish": "鴨肉拉麵", "area": "Ueno", "price":"1000-1500", "queue":"40-60分" } ]
-                    },
-                    { 
-                        "time": "12:30", "period": "PM", "type": "sakura", "name": "上野採買", "desc": "阿美橫丁。", "location": "Ameyoko", "tag": "賞櫻點",
-                        "shopping": [ { "name": "二木的菓子", "items": "零食伴手禮" }, { "name": "OS Drug (上野店)", "items": "便宜藥妝" } ]
-                    },
-                    { "time": "14:40", "period": "PM", "type": "transport", "name": "Skyliner", "desc": "前往機場。", "location": "Keisei Ueno Station", "transportDetail": "🔹路線：京成上野 ➔ 成田機場 (Skyliner)<br>🔹時間：約 45 分鐘 (直達)。" },
-                    { "time": "18:05", "period": "PM", "type": "flight", "name": "JL0809 起飛", "desc": "回家囉。", "location": "Narita Airport", "noNav": true }
-                ]
-            }
-        }
-    ]
-    </script>
 
     <script>
         function tripData() {
@@ -397,7 +243,7 @@
                 modalOpen: false, showAddModal: false, showMoneyModal: false, showTaxiModal: false,
                 currentPhrase: { jp: '', cn: '', romaji: '', cat: '' }, currentTaxi: { jpName: '', address: '' },
                 newItem: { cat: '藥妝與保健', name: '', desc: '' }, newMoney: { title: '', amount: '', cat: 'food' },
-                phraseTab: 'food', // Ensure state exists
+                phraseTab: 'food',
                 phrases: { food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ], shop: [ { jp: 'いくらですか？', cn: '請問多少錢？', romaji: 'Ikura desuka?' }, { jp: 'クレジットカードは使えますか？', cn: '可用信用卡嗎？', romaji: 'Kurejitto kaado wa tsukaemasuka?' }, { jp: '新しい在庫はありますか？', cn: '有新庫存嗎？', romaji: 'Atarashii zaiko wa arimasuka?' }, { jp: '免税できますか？', cn: '可免稅嗎？', romaji: 'Menzei dekimasuka?' }, { jp: '袋を買います', cn: '買袋子', romaji: 'Fukuro o kaimasu' } ], help: [ { jp: '駅はどこですか？', cn: '車站在哪裡？', romaji: 'Eki wa doko desuka?' }, { jp: '写真を撮ってもらえますか？', cn: '可以幫我拍照嗎？', romaji: 'Shashin o totte moraemasuka?' }, { jp: 'すみません', cn: '不好意思 / 借過', romaji: 'Sumimasen' }, { jp: '道に迷いました', cn: '我迷路了', romaji: 'Michi ni mayoimashita' }, { jp: 'トイレはどこ？', cn: '廁所在哪？', romaji: 'Toire wa doko?' } ] },
 
                 get totalSpent() { return this.moneyList.reduce((acc, item) => acc + Number(item.amount), 0); },
@@ -407,7 +253,7 @@
                     this.modelIdTemp = this.modelId; 
                     this.apiKeyTemp = this.apiKey;
                     this.startClock();
-                    // Swiper Init
+                    // Swiper Init with Delay
                     setTimeout(() => {
                         this.swiperInstance = new Swiper(".mySwiper", { 
                             autoHeight: true, 
@@ -415,12 +261,41 @@
                             observer: true, 
                             observeParents: true,
                             speed: 400, 
-                            on: { slideChange: (s) => { this.activeIndex = s.activeIndex; window.scrollTo({ top: 0, behavior: 'smooth' }); } } 
+                            on: { 
+                                slideChange: (s) => { 
+                                    this.activeIndex = s.activeIndex; 
+                                    this.centerTab(s.activeIndex); // Auto Center
+                                    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                                } 
+                            } 
                         });
                         setTimeout(() => this.autoNavigate(), 1000);
                     }, 500); 
                     
                     if (!this.prepData || !this.prepData.luggage) { this.resetData(); }
+                },
+
+                // v37: 核心修正 - Tab 自動置中
+                centerTab(index) {
+                    const container = document.getElementById('tabContainer');
+                    const tabBtn = document.getElementById(`tab-${index}`);
+                    if (container && tabBtn) {
+                        const scrollLeft = tabBtn.offsetLeft - (container.clientWidth / 2) + (tabBtn.clientWidth / 2);
+                        container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+                    }
+                },
+
+                // v37: 語音修正 (確保瀏覽器 API 可用)
+                speak(text) { 
+                    if ('speechSynthesis' in window) { 
+                        window.speechSynthesis.cancel(); // 停止上一句
+                        const u = new SpeechSynthesisUtterance(text); 
+                        u.lang = 'ja-JP'; 
+                        u.rate = 0.9; 
+                        window.speechSynthesis.speak(u); 
+                    } else { 
+                        alert('你的瀏覽器不支援發音'); 
+                    } 
                 },
 
                 openChat() { this.showChatModal = true; this.$nextTick(() => this.scrollToBottom()); },
