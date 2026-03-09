@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     <link rel="shortcut icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
 
-    <title>2026 東京賞櫻 (完整版)</title>
+    <title>2026 東京賞櫻 (v4 最終修復版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -20,7 +20,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* 3. iOS 優化樣式 */
         body { 
             font-family: 'Zen Maru Gothic', sans-serif; 
             background-color: #F2F2F7;
@@ -55,7 +54,6 @@
         .swiper { width: 100%; height: auto; }
         .swiper-wrapper { transition-timing-function: cubic-bezier(0.25, 0.8, 0.5, 1); }
         
-        /* 儲存提示動畫 */
         @keyframes fadeInOut { 0% { opacity: 0; transform: translateY(10px); } 20% { opacity: 1; transform: translateY(0); } 80% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-10px); } }
         .toast-msg { animation: fadeInOut 2s forwards; }
 
@@ -69,7 +67,6 @@
     </div>
 
     <div x-show="modalOpen || showAddModal" x-cloak class="fixed inset-0 z-[999] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm" x-transition.opacity>
-        
         <div x-show="modalOpen" class="bg-white w-full max-w-sm rounded-3xl p-8 text-center shadow-2xl relative" @click.stop>
             <button @click="modalOpen = false" class="absolute top-4 right-4 bg-gray-100 p-2 rounded-full"><i class="ph-bold ph-x text-lg"></i></button>
             <span class="inline-block bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold mb-4" x-text="currentPhrase.cat"></span>
@@ -77,7 +74,6 @@
             <p class="text-slate-400 text-sm font-mono mb-6" x-text="currentPhrase.romaji"></p>
             <div class="border-t pt-4"><p class="text-xl font-bold text-slate-600" x-text="currentPhrase.cn"></p></div>
         </div>
-
         <div x-show="showAddModal" class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative" @click.stop>
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-bold text-slate-800">新增必買清單</h3>
@@ -97,7 +93,7 @@
                     <input x-model="newItem.name" type="text" placeholder="例如: 吹風機" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 outline-none focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">備註 (選填)</label>
+                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">備註</label>
                     <input x-model="newItem.desc" type="text" placeholder="型號/價格" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-500 outline-none focus:border-blue-500">
                 </div>
                 <button @click="addItem()" class="w-full bg-orange-400 text-white font-bold py-3 rounded-xl mt-2 active:scale-95 transition-transform shadow-md">確認新增</button>
@@ -340,6 +336,13 @@
                 weatherData: { tokyo: { temp: '--', icon: 'ph-dots-three', desc: '載入中' }, hakone: { temp: '--', icon: 'ph-dots-three', desc: '載入中' } },
                 statusMsg: status,
                 prepData: initialData, // 直接使用已經處理好的資料
+
+                // 修復遺失的翻譯字典檔
+                phrases: {
+                    food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ],
+                    shop: [ { jp: 'いくらですか？', cn: '請問多少錢？', romaji: 'Ikura desuka?' }, { jp: 'クレジットカードは使えますか？', cn: '可用信用卡嗎？', romaji: 'Kurejitto kaado wa tsukaemasuka?' }, { jp: '新しい在庫はありますか？', cn: '有新庫存嗎？', romaji: 'Atarashii zaiko wa arimasuka?' }, { jp: '免税できますか？', cn: '可免稅嗎？', romaji: 'Menzei dekimasuka?' }, { jp: '袋を買います', cn: '買袋子', romaji: 'Fukuro o kaimasu' } ],
+                    help: [ { jp: '駅はどこですか？', cn: '車站在哪裡？', romaji: 'Eki wa doko desuka?' }, { jp: '写真を撮ってもらえますか？', cn: '可以幫我拍照嗎？', romaji: 'Shashin o totte moraemasuka?' }, { jp: 'すみません', cn: '不好意思 / 借過', romaji: 'Sumimasen' }, { jp: '道に迷いました', cn: '我迷路了', romaji: 'Michi ni mayoimashita' }, { jp: 'トイレはどこ？', cn: '廁所在哪？', romaji: 'Toire wa doko?' } ]
+                },
 
                 initApp() {
                     this.initWeather();
