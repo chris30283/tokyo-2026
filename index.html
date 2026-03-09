@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     <link rel="shortcut icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
 
-    <title>2026 東京賞櫻 (v11 AI修復版)</title>
+    <title>2026 東京賞櫻 (v12 AI強力修復版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -21,61 +21,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
-        body { 
-            font-family: 'Zen Maru Gothic', sans-serif; 
-            background-color: #F2F2F7;
-            -webkit-font-smoothing: antialiased;
-            overscroll-behavior-y: none;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        .glass-nav {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            padding-top: calc(env(safe-area-inset-top) + 25px);
-            padding-bottom: 15px;
-        }
-
+        body { font-family: 'Zen Maru Gothic', sans-serif; background-color: #F2F2F7; -webkit-font-smoothing: antialiased; overscroll-behavior-y: none; padding-bottom: env(safe-area-inset-bottom); }
+        .no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.05); padding-top: calc(env(safe-area-inset-top) + 25px); padding-bottom: 15px; }
         main { padding-top: calc(env(safe-area-inset-top) + 200px); }
-
         .tab-btn { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.5, 1); white-space: nowrap; }
         .tab-active { background-color: #FF8BA7; color: white; box-shadow: 0 4px 12px rgba(255, 139, 167, 0.3); transform: scale(1.05); }
         .tab-inactive { background-color: white; color: #8E8E93; }
-
         .ios-card { background: white; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: transform 0.2s; overflow: hidden; }
         .ios-card:active { transform: scale(0.99); }
         .timeline-line { position: absolute; left: 24px; top: 10px; bottom: -10px; width: 2px; background: #E5E5EA; z-index: 0; }
-
-        .expand-content { transition: max-height 0.4s ease-in-out; overflow: hidden; max-height: 0; }
-        .expanded { max-height: 2000px; }
-        .check-circle { transition: all 0.2s; }
-        .checked-bg { background-color: #34C759; border-color: #34C759; }
-        
-        .swiper { width: 100%; height: auto; }
-        .swiper-wrapper { transition-timing-function: cubic-bezier(0.25, 0.8, 0.5, 1); }
-        
+        .expand-content { transition: max-height 0.4s ease-in-out; overflow: hidden; max-height: 0; } .expanded { max-height: 2000px; }
+        .check-circle { transition: all 0.2s; } .checked-bg { background-color: #34C759; border-color: #34C759; }
+        .swiper { width: 100%; height: auto; } .swiper-wrapper { transition-timing-function: cubic-bezier(0.25, 0.8, 0.5, 1); }
         @keyframes fadeInOut { 0% { opacity: 0; transform: translateY(10px); } 20% { opacity: 1; transform: translateY(0); } 80% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-10px); } }
         .toast-msg { animation: fadeInOut 2s forwards; }
-
         @keyframes pulse-pink { 0%, 100% { border-color: #F472B6; box-shadow: 0 0 0 0 rgba(244, 114, 182, 0.7); } 50% { border-color: #EC4899; box-shadow: 0 0 0 4px rgba(244, 114, 182, 0); } }
         .active-event-card { border-left: 4px solid #F472B6; animation: pulse-pink 2s infinite; background: #FFF5F7; }
-
+        
         /* AI Chat Styles */
-        .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.5; position: relative; word-wrap: break-word; }
+        .chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 20px; font-size: 14px; line-height: 1.6; position: relative; word-wrap: break-word; }
         .chat-user { background: #3B82F6; color: white; border-bottom-right-radius: 4px; align-self: flex-end; margin-left: auto; }
         .chat-ai { background: #F3F4F6; color: #1F2937; border-bottom-left-radius: 4px; align-self: flex-start; margin-right: auto; }
+        .chat-error { background: #FEE2E2; color: #DC2626; border: 1px solid #FECACA; }
         .typing-dot { display: inline-block; width: 6px; height: 6px; background-color: #9CA3AF; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; margin: 0 2px; }
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; } .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-        .markdown-body p { margin-bottom: 0.5em; }
-        .markdown-body ul { list-style-type: disc; padding-left: 1.2em; margin-bottom: 0.5em; }
-        .markdown-body strong { font-weight: 800; color: #000; }
-
+        .markdown-body p { margin-bottom: 0.5em; } .markdown-body ul { list-style-type: disc; padding-left: 1.2em; margin-bottom: 0.5em; } .markdown-body strong { font-weight: 800; color: #000; }
         [x-cloak] { display: none !important; }
     </style>
 </head>
@@ -87,7 +59,7 @@
 
     <button @click="openChat()" class="fixed bottom-6 right-6 z-[900] w-14 h-14 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full shadow-xl flex items-center justify-center text-white active:scale-90 transition-transform border-4 border-white/20">
         <i class="ph-fill ph-robot text-2xl"></i>
-        <div x-show="!apiKey" class="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></div>
+        <div x-show="!apiKey" class="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-bounce"></div>
     </button>
 
     <div x-show="modalOpen || showAddModal || showMoneyModal || showTaxiModal || showChatModal" x-cloak class="fixed inset-0 z-[999] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm" x-transition.opacity>
@@ -96,7 +68,7 @@
             <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center">
                 <div class="flex items-center gap-2">
                     <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600"><i class="ph-fill ph-robot"></i></div>
-                    <div><h3 class="font-bold text-slate-800 text-sm">Sakura Bot</h3><p class="text-[10px] text-green-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Online</p></div>
+                    <div><h3 class="font-bold text-slate-800 text-sm">Sakura Bot</h3><p class="text-[10px] text-green-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Online (v1.5 Flash)</p></div>
                 </div>
                 <div class="flex gap-2">
                     <button @click="showKeySettings = !showKeySettings" class="p-2 text-slate-400 hover:text-slate-600"><i class="ph-bold ph-gear"></i></button>
@@ -111,13 +83,17 @@
                     <button @click="saveApiKey()" class="bg-indigo-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex-1">儲存 Key</button>
                     <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-indigo-500 text-xs flex items-center justify-center underline px-2">取得 Key</a>
                 </div>
-                <p class="text-[10px] text-slate-400 mt-2">* Key 僅儲存於手機端，不會上傳。</p>
+                <p class="text-[10px] text-slate-400 mt-2">* Key 僅存於本機 LocalStorage，請安心使用。</p>
             </div>
 
             <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-white" id="chatContainer">
+                <div x-show="chatHistory.length === 0" class="text-center text-slate-400 text-xs mt-10">
+                    <i class="ph-duotone ph-chats text-4xl mb-2"></i><br>
+                    嗨！我是你的 AI 導遊。<br>試著問我：「明天早餐吃什麼？」
+                </div>
                 <template x-for="msg in chatHistory">
                     <div class="flex flex-col w-full">
-                        <div class="chat-bubble shadow-sm markdown-body" :class="msg.role === 'user' ? 'chat-user' : 'chat-ai'" x-html="renderMarkdown(msg.content)"></div>
+                        <div class="chat-bubble shadow-sm markdown-body" :class="msg.role === 'user' ? 'chat-user' : (msg.isError ? 'chat-ai chat-error' : 'chat-ai')" x-html="renderMarkdown(msg.content)"></div>
                         <div class="text-[10px] text-slate-300 mt-1 px-1" :class="msg.role === 'user' ? 'text-right' : 'text-left'" x-text="msg.time"></div>
                     </div>
                 </template>
@@ -130,43 +106,10 @@
             </div>
         </div>
 
-        <div x-show="modalOpen" class="bg-white w-full max-w-sm rounded-3xl p-8 text-center shadow-2xl relative" @click.stop>
-            <button @click="modalOpen = false" class="absolute top-4 right-4 bg-gray-100 p-2 rounded-full"><i class="ph-bold ph-x text-lg"></i></button>
-            <span class="inline-block bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold mb-4" x-text="currentPhrase.cat"></span>
-            <h2 class="text-3xl font-bold text-slate-800 mb-2 leading-tight" x-text="currentPhrase.jp"></h2>
-            <p class="text-slate-400 text-sm font-mono mb-6" x-text="currentPhrase.romaji"></p>
-            <div class="border-t pt-4 mb-4"><p class="text-xl font-bold text-slate-600" x-text="currentPhrase.cn"></p></div>
-            <button @click="speak(currentPhrase.jp)" class="w-full bg-slate-100 text-slate-600 font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:bg-slate-200 transition-colors"><i class="ph-fill ph-speaker-high text-xl"></i> 唸給對方聽</button>
-        </div>
-
-        <div x-show="showTaxiModal" class="bg-white w-full h-full max-w-md rounded-none md:rounded-3xl md:h-auto p-8 text-center shadow-2xl relative flex flex-col justify-center" @click.stop>
-            <button @click="showTaxiModal = false" class="absolute top-6 right-6 bg-gray-100 p-3 rounded-full"><i class="ph-bold ph-x text-xl"></i></button>
-            <div class="mb-6"><div class="inline-block bg-yellow-400 text-black px-4 py-1 rounded-full text-sm font-bold mb-2">TAXI CARD</div><p class="text-slate-400 text-xs">請將此畫面出示給司機看</p></div>
-            <div class="space-y-6">
-                <div class="text-left bg-slate-50 p-4 rounded-xl border border-slate-100"><p class="text-xs text-slate-400 mb-1">給司機的話：</p><p class="text-lg font-bold text-slate-800">運転手さん、ここまでお願いします。</p></div>
-                <div><p class="text-xs text-slate-400 mb-2">目的地</p><h2 class="text-3xl font-black text-slate-900 leading-tight mb-4" x-text="currentTaxi.jpName"></h2><div class="bg-slate-100 p-4 rounded-xl"><p class="text-lg font-bold text-slate-700 font-mono" x-text="currentTaxi.address"></p></div></div>
-            </div>
-            <button @click="speak(currentTaxi.address)" class="mt-8 w-full bg-yellow-400 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-md"><i class="ph-fill ph-speaker-high text-xl"></i> 唸出地址</button>
-        </div>
-
-        <div x-show="showAddModal" class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative" @click.stop>
-            <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-slate-800">新增購物項目</h3><button @click="showAddModal = false" class="bg-gray-100 p-2 rounded-full"><i class="ph-bold ph-x"></i></button></div>
-            <div class="space-y-3">
-                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">類別</label><select x-model="newItem.cat" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700"><template x-for="(items, category) in prepData.shopping" :key="category"><option :value="category" x-text="category"></option></template></select></div>
-                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">商品名稱</label><input x-model="newItem.name" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700"></div>
-                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">備註</label><input x-model="newItem.desc" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-500"></div>
-                <button @click="addItem()" class="w-full bg-orange-400 text-white font-bold py-3 rounded-xl mt-2 active:scale-95 transition-transform shadow-md">確認新增</button>
-            </div>
-        </div>
-        <div x-show="showMoneyModal" class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative" @click.stop>
-            <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-slate-800">記一筆 💸</h3><button @click="showMoneyModal = false" class="bg-gray-100 p-2 rounded-full"><i class="ph-bold ph-x"></i></button></div>
-            <div class="space-y-3">
-                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">項目名稱</label><input x-model="newMoney.title" type="text" placeholder="午餐 / 伴手禮" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base font-bold text-slate-700 outline-none focus:border-blue-500"></div>
-                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">金額 (日幣)</label><input x-model="newMoney.amount" type="number" inputmode="numeric" placeholder="¥" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xl font-mono font-bold text-slate-700 outline-none focus:border-blue-500"></div>
-                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">分類</label><div class="grid grid-cols-4 gap-2"><button @click="newMoney.cat = 'food'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'food' ? 'bg-orange-100 border-orange-400 text-orange-600' : 'bg-white border-slate-200 text-slate-400'">飲食</button><button @click="newMoney.cat = 'shop'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'shop' ? 'bg-pink-100 border-pink-400 text-pink-600' : 'bg-white border-slate-200 text-slate-400'">購物</button><button @click="newMoney.cat = 'traffic'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'traffic' ? 'bg-blue-100 border-blue-400 text-blue-600' : 'bg-white border-slate-200 text-slate-400'">交通</button><button @click="newMoney.cat = 'other'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'other' ? 'bg-gray-100 border-gray-400 text-gray-600' : 'bg-white border-slate-200 text-slate-400'">其他</button></div></div>
-                <button @click="addMoney()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl mt-2 active:scale-95 transition-transform shadow-md">儲存紀錄</button>
-            </div>
-        </div>
+        <div x-show="modalOpen" class="bg-white w-full max-w-sm rounded-3xl p-8 text-center shadow-2xl relative" @click.stop><button @click="modalOpen = false" class="absolute top-4 right-4 bg-gray-100 p-2 rounded-full"><i class="ph-bold ph-x text-lg"></i></button><span class="inline-block bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold mb-4" x-text="currentPhrase.cat"></span><h2 class="text-3xl font-bold text-slate-800 mb-2 leading-tight" x-text="currentPhrase.jp"></h2><p class="text-slate-400 text-sm font-mono mb-6" x-text="currentPhrase.romaji"></p><div class="border-t pt-4 mb-4"><p class="text-xl font-bold text-slate-600" x-text="currentPhrase.cn"></p></div><button @click="speak(currentPhrase.jp)" class="w-full bg-slate-100 text-slate-600 font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:bg-slate-200 transition-colors"><i class="ph-fill ph-speaker-high text-xl"></i> 唸給對方聽</button></div>
+        <div x-show="showTaxiModal" class="bg-white w-full h-full max-w-md rounded-none md:rounded-3xl md:h-auto p-8 text-center shadow-2xl relative flex flex-col justify-center" @click.stop><button @click="showTaxiModal = false" class="absolute top-6 right-6 bg-gray-100 p-3 rounded-full"><i class="ph-bold ph-x text-xl"></i></button><div class="mb-6"><div class="inline-block bg-yellow-400 text-black px-4 py-1 rounded-full text-sm font-bold mb-2">TAXI CARD</div><p class="text-slate-400 text-xs">請將此畫面出示給司機看</p></div><div class="space-y-6"><div class="text-left bg-slate-50 p-4 rounded-xl border border-slate-100"><p class="text-xs text-slate-400 mb-1">給司機的話：</p><p class="text-lg font-bold text-slate-800">運転手さん、ここまでお願いします。</p></div><div><p class="text-xs text-slate-400 mb-2">目的地</p><h2 class="text-3xl font-black text-slate-900 leading-tight mb-4" x-text="currentTaxi.jpName"></h2><div class="bg-slate-100 p-4 rounded-xl"><p class="text-lg font-bold text-slate-700 font-mono" x-text="currentTaxi.address"></p></div></div></div><button @click="speak(currentTaxi.address)" class="mt-8 w-full bg-yellow-400 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-md"><i class="ph-fill ph-speaker-high text-xl"></i> 唸出地址</button></div>
+        <div x-show="showAddModal" class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative" @click.stop><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-slate-800">新增購物項目</h3><button @click="showAddModal = false" class="bg-gray-100 p-2 rounded-full"><i class="ph-bold ph-x"></i></button></div><div class="space-y-3"><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">類別</label><select x-model="newItem.cat" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700"><template x-for="(items, category) in prepData.shopping" :key="category"><option :value="category" x-text="category"></option></template></select></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">商品名稱</label><input x-model="newItem.name" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700"></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">備註</label><input x-model="newItem.desc" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-500"></div><button @click="addItem()" class="w-full bg-orange-400 text-white font-bold py-3 rounded-xl mt-2 active:scale-95 transition-transform shadow-md">確認新增</button></div></div>
+        <div x-show="showMoneyModal" class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative" @click.stop><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-slate-800">記一筆 💸</h3><button @click="showMoneyModal = false" class="bg-gray-100 p-2 rounded-full"><i class="ph-bold ph-x"></i></button></div><div class="space-y-3"><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">項目名稱</label><input x-model="newMoney.title" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base font-bold text-slate-700"></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">金額 (日幣)</label><input x-model="newMoney.amount" type="number" inputmode="numeric" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xl font-mono font-bold text-slate-700"></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">分類</label><div class="grid grid-cols-4 gap-2"><button @click="newMoney.cat = 'food'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'food' ? 'bg-orange-100 border-orange-400 text-orange-600' : 'bg-white border-slate-200 text-slate-400'">飲食</button><button @click="newMoney.cat = 'shop'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'shop' ? 'bg-pink-100 border-pink-400 text-pink-600' : 'bg-white border-slate-200 text-slate-400'">購物</button><button @click="newMoney.cat = 'traffic'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'traffic' ? 'bg-blue-100 border-blue-400 text-blue-600' : 'bg-white border-slate-200 text-slate-400'">交通</button><button @click="newMoney.cat = 'other'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'other' ? 'bg-gray-100 border-gray-400 text-gray-600' : 'bg-white border-slate-200 text-slate-400'">其他</button></div></div><button @click="addMoney()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl mt-2 active:scale-95 transition-transform shadow-md">儲存紀錄</button></div></div>
     </div>
 
     <header class="fixed top-0 inset-x-0 z-50 glass-nav">
@@ -266,14 +209,12 @@
         </div>
     </main>
 
-    <footer class="text-center py-4 text-[10px] text-slate-300 font-mono">
-        <span x-text="statusMsg"></span> | 點擊標題模擬時間
-    </footer>
+    <footer class="text-center py-4 text-[10px] text-slate-300 font-mono"><span x-text="statusMsg"></span> | 點擊標題模擬時間</footer>
 
     <script>
         function tripData() {
             const defaultPrepData = {
-                ticketsWallet: { 'Skyliner': '', 'Disney': '', 'Hotel': '', 'VJW': '' }, // 新增: 票券錢包
+                ticketsWallet: { 'Skyliner': '', 'Disney': '', 'Hotel': '', 'VJW': '' }, 
                 tickets: [ { name: 'N\'EX 成田特快', desc: '機場 ➔ 新宿', link: 'https://www.jreast.co.jp/multi/zh-CHT/nex/' }, { name: 'Skyliner', desc: '上野 ➔ 機場', link: 'https://www.keisei.co.jp/keisei/tetudou/skyliner/tc/' }, { name: '箱根周遊券 (2日)', desc: '新宿小田急旅遊中心', link: 'https://www.odakyu.jp/tc/passes/hakone/' }, { name: '浪漫特快 (特急券)', desc: '需劃位 (展望席)', link: 'https://www.web-odakyu.com/e-romancecar/' }, { name: '蕃 YORONIKU', desc: '2/1 搶訂 18:30', link: 'https://tabelog.com/tw/tokyo/A1303/A130302/13211927/' }, { name: 'SHIBUYA SKY', desc: '預約 15:00-16:00', link: 'https://www.shibuya-scramble-square.com/sky/ticket/zh_tw/' } ],
                 luggage: { '證件': [{ name: '護照', checked: false }, { name: 'Visit Japan Web (入境通關 QR Code)', checked: false }, { name: '日幣/信用卡', checked: false }, { name: '西瓜卡', checked: false }], '電子': [{ name: '網卡/eSim', checked: false }, { name: '行動電源', checked: false }, { name: '充電組', checked: false }], '生活': [{ name: '衣物 (5天)', checked: false }, { name: '好走的鞋', checked: false }, { name: '牙刷/藥品', checked: false }] },
                 shopping: { 
@@ -288,7 +229,7 @@
             let status = '狀態: 使用預設值';
             
             try {
-                const saved = localStorage.getItem('tokyo_2026_fixed_v8'); // Key v8
+                const saved = localStorage.getItem('tokyo_2026_fixed_v8');
                 const savedMoney = localStorage.getItem('tokyo_2026_money_v1');
                 if (saved) initialData = JSON.parse(saved);
                 if (savedMoney) initialMoney = JSON.parse(savedMoney);
@@ -307,7 +248,7 @@
                 prepData: initialData,
                 toastText: '已儲存',
                 
-                // AI & Smart Highlight
+                // AI Data
                 simulatedTime: null,
                 activeEventId: null,
                 apiKey: localStorage.getItem('gemini_api_key') || '',
@@ -328,20 +269,12 @@
                     this.initWeather();
                     this.startClock();
                     this.$nextTick(() => {
-                        this.swiperInstance = new Swiper(".mySwiper", {
-                            autoHeight: true, spaceBetween: 20, speed: 400, threshold: 10, observer: true, observeParents: true,
-                            on: {
-                                slideChange: (s) => {
-                                    this.activeIndex = s.activeIndex;
-                                    window.scrollTo({ top: 0, behavior: 'smooth' }); 
-                                }
-                            }
-                        });
+                        this.swiperInstance = new Swiper(".mySwiper", { autoHeight: true, spaceBetween: 20, speed: 400, on: { slideChange: (s) => { this.activeIndex = s.activeIndex; window.scrollTo({ top: 0, behavior: 'smooth' }); } } });
                         setTimeout(() => this.autoNavigate(), 1000);
                     });
                 },
 
-                // AI Chat Logic
+                // AI Chat Logic (Fix Applied)
                 openChat() { this.showChatModal = true; this.$nextTick(() => this.scrollToBottom()); },
                 saveApiKey() {
                     if (this.apiKeyTemp.trim().length > 10) {
@@ -363,7 +296,7 @@
                     this.scrollToBottom();
                     this.isAiThinking = true;
 
-                    // Context
+                    // 準備行程資料 (Context)
                     const context = JSON.stringify(this.days.map(d => ({ title: d.title, events: d.events.map(e => `${e.time} ${e.name}`) })));
                     
                     try {
@@ -371,26 +304,25 @@
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                contents: [
-                                    { role: "user", parts: [{ text: `你是一個專業的東京導遊。這是使用者的行程表：${context}。請根據行程回答使用者的問題。使用者問：${userMsg}` }] }
+                                contents: [ { role: "user", parts: [{ text: `你是一個專業的東京導遊。這是使用者的行程表：${context}。請根據行程回答使用者的問題。使用者問：${userMsg}` }] } ],
+                                // 關鍵修正：解除安全限制
+                                safetySettings: [
+                                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
                                 ]
                             })
                         });
 
-                        // **錯誤檢查機制**
+                        // 錯誤攔截
                         if (!response.ok) {
                             const errData = await response.json();
-                            const errMsg = errData.error ? errData.error.message : '未知錯誤';
-                            alert(`❌ AI 連線失敗！\n錯誤代碼: ${response.status}\n原因: ${errMsg}`);
-                            throw new Error(errMsg);
+                            throw new Error(`API Error ${response.status}: ${errData.error?.message || 'Unknown'}`);
                         }
 
                         const data = await response.json();
-                        
-                        if (!data.candidates || data.candidates.length === 0) {
-                            alert('❌ AI 沒有回傳任何內容，可能是被安全篩選擋住了。');
-                            throw new Error('No candidates');
-                        }
+                        if (!data.candidates || data.candidates.length === 0) throw new Error('No content returned (Safety Block)');
 
                         const aiText = data.candidates[0].content.parts[0].text;
                         this.chatHistory.push({ role: 'ai', content: aiText, time: new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'}) });
@@ -398,7 +330,7 @@
 
                     } catch (error) {
                         console.error(error);
-                        this.chatHistory.push({ role: 'ai', content: `⚠️ 錯誤：${error.message}`, time: 'System' });
+                        this.chatHistory.push({ role: 'ai', content: `⚠️ 連線錯誤：${error.message}`, isError: true, time: 'System' });
                     } finally {
                         this.isAiThinking = false;
                         this.$nextTick(() => this.scrollToBottom());
@@ -406,7 +338,7 @@
                 },
                 renderMarkdown(text) { return marked.parse(text); },
 
-                // ... (Other functions: speak, copy, save, etc. remain the same) ...
+                // Standard Functions
                 startClock() { setInterval(() => this.checkActiveEvent(), 60000); this.checkActiveEvent(); },
                 enableSimulateMode() { if (confirm('開啟時光機模擬 3/14 17:00？')) { this.simulatedTime = new Date('2026-03-14T17:00:00'); this.checkActiveEvent(); this.autoNavigate(); alert('已切換至 3/14 17:00！'); } },
                 getNow() { return this.simulatedTime || new Date(); },
@@ -425,7 +357,7 @@
                     });
                     this.activeEventId = foundEvent;
                 },
-                isCurrentEvent(dayIndex, event) { return false; }, // Handled in HTML class logic
+                isCurrentEvent(dayIndex, event) { return false; },
                 autoNavigate() {
                     if (this.activeEventId) {
                         const [_, dayIdx] = this.activeEventId.split('-');
@@ -453,16 +385,12 @@
                 openAddModal() { this.newItem = { cat: '藥妝與保健', name: '', desc: '' }; this.showAddModal = true; },
                 addItem() { if (!this.newItem.name) return; this.prepData.shopping[this.newItem.cat].push({ name: this.newItem.name, desc: this.newItem.desc || '新增項目', checked: false }); this.saveChecks(); this.showAddModal = false; this.$nextTick(() => this.updateSwiperHeight()); },
                 deleteItem(cat, idx) { if(confirm('刪除？')) { this.prepData.shopping[cat].splice(idx, 1); this.saveChecks(); this.$nextTick(() => this.updateSwiperHeight()); } },
-                
                 async initWeather() { await this.fetchW(35.6895, 139.6917, 'tokyo'); await this.fetchW(35.2380, 139.0460, 'hakone'); },
                 async fetchW(lat, lon, key) { try { const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=Asia%2FTokyo`); const d = await r.json(); const c = d.current_weather.weathercode; const t = Math.round(d.current_weather.temperature); let i = 'ph-sun', s = '晴朗'; if(c>=1 && c<=3) {i='ph-cloud-sun';s='多雲';} else if(c>=45 && c<=48) {i='ph-cloud-fog';s='霧氣';} else if(c>=51 && c<=67) {i='ph-drop';s='雨天';} let feel = t<=10?'寒冷':t<=18?'微涼':t<=25?'舒適':'炎熱'; this.weatherData[key] = { temp: `${t}°C`, icon: i, desc: `${s} • ${feel}` }; } catch { this.weatherData[key] = { temp: '-', icon: 'ph-warning', desc: '離線' }; } },
                 getCurrentWeather() { if (this.activeIndex === 2 || this.activeIndex === 3) return { ...this.weatherData.hakone, loc: '箱根' }; return { ...this.weatherData.tokyo, loc: '東京' }; },
-                
                 getIconColor(t) { const c = { 'transport': 'bg-blue-500', 'food': 'bg-orange-400', 'activity': 'bg-slate-700', 'sakura': 'bg-pink-400', 'hotel': 'bg-indigo-500', 'flight': 'bg-sky-500', 'luggage': 'bg-teal-500' }; return c[t] || 'bg-slate-400'; },
                 getIconClass(t) { const i = { 'transport': 'ph-bold ph-train', 'food': 'ph-bold ph-bowl-food', 'activity': 'ph-bold ph-camera', 'sakura': 'ph-fill ph-flower-lotus', 'hotel': 'ph-bold ph-bed', 'flight': 'ph-bold ph-airplane-tilt', 'luggage': 'ph-bold ph-suitcase' }; return i[t] || 'ph-circle'; },
                 getTagColor(t) { if(t==='需預約')return 'bg-red-100 text-red-600'; if(t==='必吃' || t==='需搶位' || t==='周遊券OK')return 'bg-orange-100 text-orange-600'; if(t==='賞櫻點')return 'bg-pink-100 text-pink-600'; return 'bg-blue-100 text-blue-600'; },
-
-                // Data (Days) ... (保持不變)
                 days: [
                     {
                         shortTitle: 'D1 3/14(六)', title: 'Day 1: 新宿之夜', hotel: 'APA Hotel Shinjuku-Gyoemmae',
