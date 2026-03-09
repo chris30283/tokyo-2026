@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     <link rel="shortcut icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
 
-    <title>2026 東京賞櫻 (v6 匯出分享版)</title>
+    <title>2026 東京賞櫻 (v7 發音+司機卡)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -66,14 +66,45 @@
         <i class="ph-bold ph-check-circle text-green-400"></i> <span x-text="toastText"></span>
     </div>
 
-    <div x-show="modalOpen || showAddModal || showMoneyModal" x-cloak class="fixed inset-0 z-[999] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm" x-transition.opacity>
+    <div x-show="modalOpen || showAddModal || showMoneyModal || showTaxiModal" x-cloak class="fixed inset-0 z-[999] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm" x-transition.opacity>
         
         <div x-show="modalOpen" class="bg-white w-full max-w-sm rounded-3xl p-8 text-center shadow-2xl relative" @click.stop>
             <button @click="modalOpen = false" class="absolute top-4 right-4 bg-gray-100 p-2 rounded-full"><i class="ph-bold ph-x text-lg"></i></button>
             <span class="inline-block bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold mb-4" x-text="currentPhrase.cat"></span>
             <h2 class="text-3xl font-bold text-slate-800 mb-2 leading-tight" x-text="currentPhrase.jp"></h2>
             <p class="text-slate-400 text-sm font-mono mb-6" x-text="currentPhrase.romaji"></p>
-            <div class="border-t pt-4"><p class="text-xl font-bold text-slate-600" x-text="currentPhrase.cn"></p></div>
+            <div class="border-t pt-4 mb-4"><p class="text-xl font-bold text-slate-600" x-text="currentPhrase.cn"></p></div>
+            <button @click="speak(currentPhrase.jp)" class="w-full bg-slate-100 text-slate-600 font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:bg-slate-200 transition-colors">
+                <i class="ph-fill ph-speaker-high text-xl"></i> 唸給對方聽
+            </button>
+        </div>
+
+        <div x-show="showTaxiModal" class="bg-white w-full h-full max-w-md rounded-none md:rounded-3xl md:h-auto p-8 text-center shadow-2xl relative flex flex-col justify-center" @click.stop>
+            <button @click="showTaxiModal = false" class="absolute top-6 right-6 bg-gray-100 p-3 rounded-full"><i class="ph-bold ph-x text-xl"></i></button>
+            
+            <div class="mb-6">
+                <div class="inline-block bg-yellow-400 text-black px-4 py-1 rounded-full text-sm font-bold mb-2">TAXI CARD</div>
+                <p class="text-slate-400 text-xs">請將此畫面出示給司機看</p>
+            </div>
+
+            <div class="space-y-6">
+                <div class="text-left bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <p class="text-xs text-slate-400 mb-1">給司機的話：</p>
+                    <p class="text-lg font-bold text-slate-800">運転手さん、ここまでお願いします。</p>
+                </div>
+
+                <div>
+                    <p class="text-xs text-slate-400 mb-2">目的地</p>
+                    <h2 class="text-3xl font-black text-slate-900 leading-tight mb-4" x-text="currentTaxi.jpName"></h2>
+                    <div class="bg-slate-100 p-4 rounded-xl">
+                        <p class="text-lg font-bold text-slate-700 font-mono" x-text="currentTaxi.address"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <button @click="speak(currentTaxi.address)" class="mt-8 w-full bg-yellow-400 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-md">
+                <i class="ph-fill ph-speaker-high text-xl"></i> 唸出地址
+            </button>
         </div>
 
         <div x-show="showAddModal" class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative" @click.stop>
@@ -95,14 +126,8 @@
                 <button @click="showMoneyModal = false" class="bg-gray-100 p-2 rounded-full"><i class="ph-bold ph-x"></i></button>
             </div>
             <div class="space-y-3">
-                <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">項目名稱</label>
-                    <input x-model="newMoney.title" type="text" placeholder="午餐 / 伴手禮" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base font-bold text-slate-700 outline-none focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">金額 (日幣)</label>
-                    <input x-model="newMoney.amount" type="number" inputmode="numeric" placeholder="¥" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xl font-mono font-bold text-slate-700 outline-none focus:border-blue-500">
-                </div>
+                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">項目名稱</label><input x-model="newMoney.title" type="text" placeholder="午餐 / 伴手禮" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base font-bold text-slate-700 outline-none focus:border-blue-500"></div>
+                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">金額 (日幣)</label><input x-model="newMoney.amount" type="number" inputmode="numeric" placeholder="¥" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xl font-mono font-bold text-slate-700 outline-none focus:border-blue-500"></div>
                 <div>
                     <label class="text-xs font-bold text-slate-400 uppercase ml-1">分類</label>
                     <div class="grid grid-cols-4 gap-2">
@@ -225,7 +250,7 @@
                     <div class="ios-card p-4">
                         <div class="flex items-center gap-2 mb-4"><div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-500"><i class="ph-fill ph-translate"></i></div><h3 class="font-bold text-slate-800">手指日文</h3></div>
                         <div class="flex bg-slate-100 rounded-lg p-1 mb-4"><button @click="phraseTab = 'food'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'food' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">餐廳</button><button @click="phraseTab = 'shop'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'shop' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">購物</button><button @click="phraseTab = 'help'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'help' ? 'bg-white shadow text-red-500' : 'text-slate-400'">緊急</button></div>
-                        <div class="grid grid-cols-2 gap-2"><template x-for="p in phrases[phraseTab]"><div @click="openPhrase(p, phraseTab)" class="bg-gray-50 border border-gray-100 rounded-xl p-3 active:bg-gray-100 active:scale-95 transition-transform text-center"><div class="text-sm font-bold text-slate-800 truncate" x-text="p.jp"></div><div class="text-[10px] text-slate-500 mt-1" x-text="p.cn"></div></div></template></div>
+                        <div class="grid grid-cols-2 gap-2"><template x-for="p in phrases[phraseTab]"><div @click="openPhrase(p, phraseTab)" class="bg-gray-50 border border-gray-100 rounded-xl p-3 active:bg-gray-100 active:scale-95 transition-transform text-center"><div class="text-sm font-bold text-slate-800 truncate" x-text="p.jp"></div><div class="text-[10px] text-slate-500 mt-1 flex justify-center items-center gap-1"><span x-text="p.cn"></span> <i class="ph-bold ph-speaker-high text-pink-400"></i></div></div></template></div>
                     </div>
                 </div>
 
@@ -298,6 +323,12 @@
                                                 <h3 class="text-lg font-bold text-slate-800 mb-1" x-text="event.name"></h3>
                                                 <p class="text-sm text-slate-500 line-clamp-2" x-text="event.desc"></p>
                                                 
+                                                <template x-if="event.taxi">
+                                                    <div class="mt-2">
+                                                        <button @click.stop="openTaxi(event)" class="text-xs font-bold text-black bg-yellow-400 px-3 py-1.5 rounded-lg flex items-center gap-2 active:scale-95 transition-transform"><i class="ph-bold ph-taxi"></i> 給司機看 (Taxi Card)</button>
+                                                    </div>
+                                                </template>
+
                                                 <template x-if="event.luggageInfo">
                                                     <div class="mt-2 bg-yellow-50 border border-yellow-200 rounded-lg p-2 flex items-start gap-2 text-xs text-yellow-800" @click.stop="expanded = true; $nextTick(() => updateSwiperHeight())">
                                                         <i class="ph-fill ph-elevator text-lg mt-0.5 text-yellow-600"></i>
@@ -386,15 +417,16 @@
             } catch (e) { console.error('Init load fail', e); status = '狀態: 讀取失敗'; }
 
             return {
-                activeIndex: 0, phraseTab: 'food', modalOpen: false, showAddModal: false, showMoneyModal: false, showToast: false, swiperInstance: null,
+                activeIndex: 0, phraseTab: 'food', modalOpen: false, showAddModal: false, showMoneyModal: false, showTaxiModal: false, showToast: false, swiperInstance: null,
                 currentPhrase: { jp: '', cn: '', romaji: '', cat: '' }, 
+                currentTaxi: { jpName: '', address: '' },
                 newItem: { cat: '藥妝與保健', name: '', desc: '' },
                 newMoney: { title: '', amount: '', cat: 'food' },
                 moneyList: initialMoney,
                 weatherData: { tokyo: { temp: '--', icon: 'ph-dots-three', desc: '載入中' }, hakone: { temp: '--', icon: 'ph-dots-three', desc: '載入中' } },
                 statusMsg: status,
                 prepData: initialData,
-                toastText: '已儲存', // 提示文字變數
+                toastText: '已儲存',
 
                 phrases: {
                     food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ],
@@ -420,6 +452,28 @@
                         });
                     });
                 },
+                
+                // 新功能: 發音 (TTS)
+                speak(text) {
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance(text);
+                        utterance.lang = 'ja-JP';
+                        utterance.rate = 0.9; // 稍微慢一點點
+                        window.speechSynthesis.speak(utterance);
+                    } else {
+                        alert('您的瀏覽器不支援發音功能');
+                    }
+                },
+
+                // 新功能: 打開計程車卡
+                openTaxi(event) {
+                    if (event.taxi) {
+                        this.currentTaxi = event.taxi;
+                        this.showTaxiModal = true;
+                    }
+                },
+
+                openPhrase(p, catName) { const catMap = { 'food': '餐廳', 'shop': '購物', 'help': '緊急' }; this.currentPhrase = { ...p, cat: catMap[catName] }; this.modalOpen = true; },
                 
                 slideTo(index) { this.swiperInstance.slideTo(index); },
                 updateSwiperHeight() { setTimeout(() => { this.swiperInstance.updateAutoHeight(300); this.swiperInstance.update(); }, 100); },
@@ -477,7 +531,6 @@
                     return map[cat] || map['other'];
                 },
 
-                // 新增：匯出購物清單 (Shopping Export)
                 exportShopping() {
                     let text = "🛍️ 東京戰利品清單\n";
                     for (const [cat, items] of Object.entries(this.prepData.shopping)) {
@@ -492,7 +545,6 @@
                     this.copyToClipboard(text);
                 },
 
-                // 新增：匯出記帳紀錄 (Accounting Export)
                 exportMoney() {
                     let text = "💸 東京消費紀錄\n";
                     text += `📅 日期: ${new Date().toLocaleDateString()}\n`;
@@ -504,7 +556,6 @@
                     this.copyToClipboard(text);
                 },
 
-                // 新增：複製到剪貼簿功能
                 copyToClipboard(text) {
                     if (navigator.clipboard && window.isSecureContext) {
                         navigator.clipboard.writeText(text).then(() => {
@@ -515,7 +566,6 @@
                             alert("複製失敗，請手動截圖");
                         });
                     } else {
-                        // Fallback for older devices/insecure contexts
                         let textArea = document.createElement("textarea");
                         textArea.value = text;
                         textArea.style.position = "fixed";
@@ -564,7 +614,6 @@
                     }
                 },
 
-                openPhrase(p, catName) { const catMap = { 'food': '餐廳', 'shop': '購物', 'help': '緊急' }; this.currentPhrase = { ...p, cat: catMap[catName] }; this.modalOpen = true; },
                 async initWeather() { await this.fetchW(35.6895, 139.6917, 'tokyo'); await this.fetchW(35.2380, 139.0460, 'hakone'); },
                 async fetchW(lat, lon, key) { 
                     try { const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=Asia%2FTokyo`); const d = await r.json(); const c = d.current_weather.weathercode; const t = Math.round(d.current_weather.temperature); let i = 'ph-sun', s = '晴朗'; if(c>=1 && c<=3) {i='ph-cloud-sun';s='多雲';} else if(c>=45 && c<=48) {i='ph-cloud-fog';s='霧氣';} else if(c>=51 && c<=67) {i='ph-drop';s='雨天';} let feel = t<=10?'寒冷':t<=18?'微涼':t<=25?'舒適':'炎熱'; this.weatherData[key] = { temp: `${t}°C`, icon: i, desc: `${s} • ${feel}` }; } catch { this.weatherData[key] = { temp: '-', icon: 'ph-warning', desc: '離線' }; } 
@@ -593,7 +642,10 @@
                                     ]
                                 }
                             },
-                            { time: '18:15', period: 'PM', type: 'hotel', name: 'Check-in', desc: '建議從新宿站搭計程車前往飯店 (約 ¥1000-1200)。', location: 'APA Hotel Shinjuku-Gyoemmae' },
+                            { 
+                                time: '18:15', period: 'PM', type: 'hotel', name: 'Check-in', desc: '建議從新宿站搭計程車前往飯店 (約 ¥1000-1200)。', location: 'APA Hotel Shinjuku-Gyoemmae',
+                                taxi: { jpName: 'APAホテル 新宿御苑前', address: '東京都新宿区新宿2-2-8' } // Taxi Data
+                            },
                             { 
                                 time: '19:00', period: 'PM', type: 'food', name: '新宿晚餐', desc: '第一晚吃好點！', location: 'Shinjuku', tag: '推薦',
                                 restaurants: [ 
@@ -655,7 +707,10 @@
                                 history: '日本首座戶外美術館。', tips: '憑周遊券門票可折抵 ¥200。',
                                 transportDetail: '🔹路線：強羅 ➔ 雕刻之森 (步行或電車一站)<br>🔹Tag: <span class="bg-orange-100 text-orange-600 px-1 rounded text-[10px]">周遊券OK</span>'
                             },
-                            { time: '16:30', period: 'PM', type: 'hotel', name: '溫泉 Check-in', desc: '享受旅館設施與晚餐。', location: 'Hakone Mizunoto' }
+                            { 
+                                time: '16:30', period: 'PM', type: 'hotel', name: '溫泉 Check-in', desc: '享受旅館設施與晚餐。', location: 'Hakone Mizunoto',
+                                taxi: { jpName: '箱根小涌谷温泉 水の音', address: '神奈川県足柄下郡箱根町小涌谷492-23' } // Taxi Data
+                            }
                         ]
                     },
                     {
@@ -696,7 +751,8 @@
                                     { name: 'Onigiri Bongo', dish: '筋子+鮭魚飯糰', area: 'Otsuka', price:'1000-1500', queue:'2-4小時(建議外帶)' }, 
                                     { name: '鳴龍', dish: '擔擔麵', area: 'Otsuka', price:'1000-1500', queue:'60-90分' }, 
                                     { name: '天下壽司', dish: '迴轉壽司', area: 'Otsuka', price:'1500-2500', queue:'10-20分' } 
-                                ]
+                                ],
+                                taxi: { jpName: 'APAホテル 山手大塚駅タワー', address: '東京都豊島区南大塚3-31-10' } // Taxi Data
                             }
                         ]
                     },
@@ -722,11 +778,13 @@
                             { 
                                 time: '17:00', period: 'PM', type: 'food', name: 'Yoroniku 南青山', desc: '燒肉界最高殿堂。', location: 'Yoroniku Minami Aoyama', tag: '需搶位',
                                 restaurants: [ { name: 'よろにく 南青山', dish: '絲綢里肌/松露壽喜燒', area: 'Minami Aoyama', price:'15000-20000', queue:'完全預約制' } ],
-                                transportDetail: '🔹路線：澀谷 ➔ 南青山 (搭乘計程車約 10 分鐘，費用約 ¥1000)。'
+                                transportDetail: '🔹路線：澀谷 ➔ 南青山 (搭乘計程車約 10 分鐘，費用約 ¥1000)。',
+                                taxi: { jpName: 'よろにく 南青山', address: '東京都港区南青山6-6-22' } // Taxi Data
                             },
                             {
                                 time: '19:30', period: 'PM', type: 'activity', name: '東京鐵塔 & 芝公園', desc: '飯後最浪漫的散步。', location: 'Prince Shiba Park', tag: '夜景',
-                                transportDetail: '🔹路線：從餐廳直接搭計程車最順 (約 15 分鐘)。'
+                                transportDetail: '🔹路線：從餐廳直接搭計程車最順 (約 15 分鐘)。',
+                                taxi: { jpName: '東京タワー (芝公園)', address: '東京都港区芝公園4-2-8' } // Taxi Data
                             },
                             {
                                 time: '20:30', period: 'PM', type: 'transport', name: '返回飯店', desc: '大江戶線 ➔ 大塚。', location: 'Otsuka Station', noNav: true
