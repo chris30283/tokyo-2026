@@ -10,13 +10,14 @@
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     <link rel="shortcut icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
 
-    <title>2026 東京賞櫻 (v10 頂部修正版)</title>
+    <title>2026 東京賞櫻 (v11 AI導遊版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
@@ -30,22 +31,16 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* v10 關鍵修正：Glass Nav 高度與 Padding */
         .glass-nav {
-            background: rgba(255, 255, 255, 0.95); /* 稍微不透明一點，避免干擾 */
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(0,0,0,0.05);
-            /* 強制增加頂部安全距離 + 25px 緩衝 */
             padding-top: calc(env(safe-area-inset-top) + 25px);
             padding-bottom: 15px;
         }
 
-        /* v10 關鍵修正：Main 內容起始高度自動計算 */
-        main {
-            /* 讓內容往下推，避開變高的 Header */
-            padding-top: calc(env(safe-area-inset-top) + 200px); 
-        }
+        main { padding-top: calc(env(safe-area-inset-top) + 200px); }
 
         .tab-btn { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.5, 1); white-space: nowrap; }
         .tab-active { background-color: #FF8BA7; color: white; box-shadow: 0 4px 12px rgba(255, 139, 167, 0.3); transform: scale(1.05); }
@@ -66,9 +61,20 @@
         @keyframes fadeInOut { 0% { opacity: 0; transform: translateY(10px); } 20% { opacity: 1; transform: translateY(0); } 80% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-10px); } }
         .toast-msg { animation: fadeInOut 2s forwards; }
 
-        /* 導航呼吸燈效果 */
         @keyframes pulse-pink { 0%, 100% { border-color: #F472B6; box-shadow: 0 0 0 0 rgba(244, 114, 182, 0.7); } 50% { border-color: #EC4899; box-shadow: 0 0 0 4px rgba(244, 114, 182, 0); } }
         .active-event-card { border-left: 4px solid #F472B6; animation: pulse-pink 2s infinite; background: #FFF5F7; }
+
+        /* AI Chat Styles */
+        .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.5; position: relative; word-wrap: break-word; }
+        .chat-user { background: #3B82F6; color: white; border-bottom-right-radius: 4px; align-self: flex-end; margin-left: auto; }
+        .chat-ai { background: #F3F4F6; color: #1F2937; border-bottom-left-radius: 4px; align-self: flex-start; margin-right: auto; }
+        .typing-dot { display: inline-block; width: 6px; height: 6px; background-color: #9CA3AF; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; margin: 0 2px; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        .markdown-body p { margin-bottom: 0.5em; }
+        .markdown-body ul { list-style-type: disc; padding-left: 1.2em; margin-bottom: 0.5em; }
+        .markdown-body strong { font-weight: 800; color: #000; }
 
         [x-cloak] { display: none !important; }
     </style>
@@ -79,8 +85,58 @@
         <i class="ph-bold ph-check-circle text-green-400"></i> <span x-text="toastText"></span>
     </div>
 
-    <div x-show="modalOpen || showAddModal || showMoneyModal || showTaxiModal" x-cloak class="fixed inset-0 z-[999] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm" x-transition.opacity>
+    <button @click="openChat()" class="fixed bottom-6 right-6 z-[900] w-14 h-14 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full shadow-xl flex items-center justify-center text-white active:scale-90 transition-transform border-4 border-white/20">
+        <i class="ph-fill ph-robot text-2xl"></i>
+        <div x-show="!apiKey" class="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></div>
+    </button>
+
+    <div x-show="modalOpen || showAddModal || showMoneyModal || showTaxiModal || showChatModal" x-cloak class="fixed inset-0 z-[999] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm" x-transition.opacity>
         
+        <div x-show="showChatModal" class="bg-white w-full h-[80vh] max-w-md rounded-3xl shadow-2xl relative flex flex-col overflow-hidden" @click.stop>
+            <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600"><i class="ph-fill ph-robot"></i></div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm">Sakura Bot</h3>
+                        <p class="text-[10px] text-green-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Online</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button @click="showKeySettings = !showKeySettings" class="p-2 text-slate-400 hover:text-slate-600"><i class="ph-bold ph-gear"></i></button>
+                    <button @click="showChatModal = false" class="p-2 text-slate-400 hover:text-slate-600"><i class="ph-bold ph-x"></i></button>
+                </div>
+            </div>
+
+            <div x-show="showKeySettings || !apiKey" class="bg-slate-100 p-4 border-b border-slate-200 animate-fade-in-down">
+                <label class="text-xs font-bold text-slate-500 mb-1 block">Google Gemini API Key</label>
+                <input type="password" x-model="apiKeyTemp" placeholder="貼上 AIza 開頭的 Key..." class="w-full rounded-lg border border-slate-300 p-2 text-xs mb-2">
+                <div class="flex gap-2">
+                    <button @click="saveApiKey()" class="bg-indigo-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex-1">儲存 Key</button>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-indigo-500 text-xs flex items-center justify-center underline px-2">取得 Key</a>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-2">* Key 僅儲存於手機端，不會上傳伺服器。</p>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-white" id="chatContainer">
+                <template x-for="msg in chatHistory">
+                    <div class="flex flex-col w-full">
+                        <div class="chat-bubble shadow-sm markdown-body" :class="msg.role === 'user' ? 'chat-user' : 'chat-ai'" x-html="renderMarkdown(msg.content)"></div>
+                        <div class="text-[10px] text-slate-300 mt-1 px-1" :class="msg.role === 'user' ? 'text-right' : 'text-left'" x-text="msg.time"></div>
+                    </div>
+                </template>
+                <div x-show="isAiThinking" class="chat-bubble chat-ai w-16 flex items-center justify-center">
+                    <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+                </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 border-t border-slate-100 flex gap-2 items-center">
+                <input type="text" x-model="chatInput" @keydown.enter="sendChat()" placeholder="問問關於行程的事..." class="flex-1 bg-white border border-slate-200 rounded-full px-4 py-2.5 text-sm outline-none focus:border-indigo-500 transition-colors">
+                <button @click="sendChat()" :disabled="!chatInput || isAiThinking" class="w-10 h-10 bg-indigo-500 rounded-full text-white flex items-center justify-center shadow-md active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all">
+                    <i class="ph-bold ph-paper-plane-right"></i>
+                </button>
+            </div>
+        </div>
+
         <div x-show="modalOpen" class="bg-white w-full max-w-sm rounded-3xl p-8 text-center shadow-2xl relative" @click.stop>
             <button @click="modalOpen = false" class="absolute top-4 right-4 bg-gray-100 p-2 rounded-full"><i class="ph-bold ph-x text-lg"></i></button>
             <span class="inline-block bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold mb-4" x-text="currentPhrase.cat"></span>
@@ -165,12 +221,9 @@
     <main>
         <div class="swiper mySwiper">
             <div class="swiper-wrapper">
-                
                 <div class="swiper-slide px-4 pb-24">
                     <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 ml-1">必備預約</h3>
-                    <div class="grid gap-3 mb-8">
-                        <template x-for="ticket in prepData.tickets"><div class="ios-card p-4 flex justify-between items-center"><div><div class="font-bold text-slate-800" x-text="ticket.name"></div><div class="text-xs text-slate-400 mt-0.5" x-text="ticket.desc"></div></div><a :href="ticket.link" target="_blank" class="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-xs font-bold active:bg-slate-200">預約</a></div></template>
-                    </div>
+                    <div class="grid gap-3 mb-8"><template x-for="ticket in prepData.tickets"><div class="ios-card p-4 flex justify-between items-center"><div><div class="font-bold text-slate-800" x-text="ticket.name"></div><div class="text-xs text-slate-400 mt-0.5" x-text="ticket.desc"></div></div><a :href="ticket.link" target="_blank" class="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-xs font-bold active:bg-slate-200">預約</a></div></template></div>
                     <div class="flex justify-between items-center mb-3 ml-1"><h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">出發前檢查</h3><button @click="resetData()" class="text-[10px] text-slate-400 underline">重置清單</button></div>
                     <div class="ios-card overflow-hidden mb-8"><template x-for="(items, category) in prepData.luggage"><div class="border-b border-gray-100 last:border-0"><div class="bg-gray-50 px-4 py-2 text-[10px] font-bold text-slate-400 uppercase" x-text="category"></div><template x-for="item in items"><div @click="toggleCheck(item)" class="flex items-center gap-3 px-4 py-3 active:bg-gray-50 cursor-pointer"><div class="w-6 h-6 rounded-full border-2 flex items-center justify-center check-circle" :class="item.checked ? 'checked-bg border-transparent' : 'border-gray-300'"><i x-show="item.checked" class="ph-bold ph-check text-white text-sm"></i></div><span class="text-sm font-medium text-slate-700" :class="{'line-through opacity-40': item.checked}" x-text="item.name"></span></div></template></div></template></div>
                     <div class="flex justify-between items-end mb-3 ml-1"><h3 class="text-sm font-bold text-orange-400 uppercase tracking-wider">🇯🇵 必買戰利品清單</h3><div class="flex gap-2"><button @click="exportShopping()" class="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1 rounded-full active:scale-95 transition-transform flex items-center gap-1"><i class="ph-bold ph-export"></i> 分享</button><button @click="openAddModal()" class="text-xs font-bold text-white bg-orange-400 px-3 py-1 rounded-full shadow active:scale-95 transition-transform flex items-center gap-1"><i class="ph-bold ph-plus"></i> 新增</button></div></div>
@@ -201,18 +254,9 @@
                     <div class="swiper-slide px-4 pb-24">
                         <div class="flex justify-center mb-6">
                             <template x-if="day.hotel !== 'Sweet Home'">
-                                <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(day.hotel)" target="_blank" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-bold text-slate-600 border border-slate-100 flex items-center gap-2 hover:bg-slate-50 transition-colors">
-                                    <i class="ph-fill ph-bed text-indigo-500"></i>
-                                    <span x-text="day.hotel"></span>
-                                    <i class="ph-bold ph-arrow-square-out text-slate-400 text-[10px]"></i>
-                                </a>
+                                <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(day.hotel)" target="_blank" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-bold text-slate-600 border border-slate-100 flex items-center gap-2 hover:bg-slate-50 transition-colors"><i class="ph-fill ph-bed text-indigo-500"></i><span x-text="day.hotel"></span><i class="ph-bold ph-arrow-square-out text-slate-400 text-[10px]"></i></a>
                             </template>
-                            <template x-if="day.hotel === 'Sweet Home'">
-                                <div class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-bold text-slate-600 border border-slate-100 flex items-center gap-2">
-                                    <i class="ph-fill ph-house text-pink-500"></i>
-                                    <span x-text="day.hotel"></span>
-                                </div>
-                            </template>
+                            <template x-if="day.hotel === 'Sweet Home'"><div class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-bold text-slate-600 border border-slate-100 flex items-center gap-2"><i class="ph-fill ph-house text-pink-500"></i><span x-text="day.hotel"></span></div></template>
                         </div>
                         <template x-if="day.hasOptions"><div class="flex justify-center mb-8"><div class="bg-slate-100 p-1 rounded-xl flex gap-1"><button @click="day.selectedOption = 'A'; $nextTick(() => updateSwiperHeight())" class="px-4 py-2 rounded-lg text-sm font-bold transition-all" :class="day.selectedOption === 'A' ? 'bg-slate-800 text-white shadow' : 'text-slate-400 hover:text-slate-600'" x-text="day.optionALabel"></button><button @click="day.selectedOption = 'B'; $nextTick(() => updateSwiperHeight())" class="px-4 py-2 rounded-lg text-sm font-bold transition-all" :class="day.selectedOption === 'B' ? 'bg-pink-500 text-white shadow' : 'text-slate-400 hover:text-slate-600'" x-text="day.optionBLabel"></button></div></div></template>
                         <div class="relative pl-4">
@@ -260,7 +304,7 @@
     <script>
         function tripData() {
             const defaultPrepData = {
-                ticketsWallet: { 'Skyliner': '', 'Disney': '', 'Hotel': '', 'VJW': '' }, // 新增: 票券錢包
+                ticketsWallet: { 'Skyliner': '', 'Disney': '', 'Hotel': '', 'VJW': '' }, 
                 tickets: [ { name: 'N\'EX 成田特快', desc: '機場 ➔ 新宿', link: 'https://www.jreast.co.jp/multi/zh-CHT/nex/' }, { name: 'Skyliner', desc: '上野 ➔ 機場', link: 'https://www.keisei.co.jp/keisei/tetudou/skyliner/tc/' }, { name: '箱根周遊券 (2日)', desc: '新宿小田急旅遊中心', link: 'https://www.odakyu.jp/tc/passes/hakone/' }, { name: '浪漫特快 (特急券)', desc: '需劃位 (展望席)', link: 'https://www.web-odakyu.com/e-romancecar/' }, { name: '蕃 YORONIKU', desc: '2/1 搶訂 18:30', link: 'https://tabelog.com/tw/tokyo/A1303/A130302/13211927/' }, { name: 'SHIBUYA SKY', desc: '預約 15:00-16:00', link: 'https://www.shibuya-scramble-square.com/sky/ticket/zh_tw/' } ],
                 luggage: { '證件': [{ name: '護照', checked: false }, { name: 'Visit Japan Web (入境通關 QR Code)', checked: false }, { name: '日幣/信用卡', checked: false }, { name: '西瓜卡', checked: false }], '電子': [{ name: '網卡/eSim', checked: false }, { name: '行動電源', checked: false }, { name: '充電組', checked: false }], '生活': [{ name: '衣物 (5天)', checked: false }, { name: '好走的鞋', checked: false }, { name: '牙刷/藥品', checked: false }] },
                 shopping: { 
@@ -283,7 +327,7 @@
             } catch (e) { console.error('Init load fail', e); }
 
             return {
-                activeIndex: 0, phraseTab: 'food', modalOpen: false, showAddModal: false, showMoneyModal: false, showTaxiModal: false, showToast: false, swiperInstance: null,
+                activeIndex: 0, phraseTab: 'food', modalOpen: false, showAddModal: false, showMoneyModal: false, showTaxiModal: false, showChatModal: false, showKeySettings: false, showToast: false, swiperInstance: null,
                 currentPhrase: { jp: '', cn: '', romaji: '', cat: '' }, 
                 currentTaxi: { jpName: '', address: '' },
                 newItem: { cat: '藥妝與保健', name: '', desc: '' },
@@ -294,9 +338,14 @@
                 prepData: initialData,
                 toastText: '已儲存',
                 
-                // Smart Highlight Data
-                simulatedTime: null, // 測試用
+                // AI & Smart Highlight
+                simulatedTime: null,
                 activeEventId: null,
+                apiKey: localStorage.getItem('gemini_api_key') || '',
+                apiKeyTemp: '',
+                chatInput: '',
+                isAiThinking: false,
+                chatHistory: JSON.parse(localStorage.getItem('chat_history') || '[]'),
 
                 phrases: {
                     food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ],
@@ -308,7 +357,7 @@
 
                 initApp() {
                     this.initWeather();
-                    this.startClock(); // 啟動自動導航檢查
+                    this.startClock();
                     this.$nextTick(() => {
                         this.swiperInstance = new Swiper(".mySwiper", {
                             autoHeight: true, spaceBetween: 20, speed: 400, threshold: 10, observer: true, observeParents: true,
@@ -319,143 +368,113 @@
                                 }
                             }
                         });
-                        // 嘗試自動跳轉到當天行程
                         setTimeout(() => this.autoNavigate(), 1000);
                     });
                 },
 
-                // 2. Smart Highlight Logic
-                startClock() {
-                    setInterval(() => this.checkActiveEvent(), 60000); // 每分鐘檢查
-                    this.checkActiveEvent();
+                // AI Chat Logic
+                openChat() { this.showChatModal = true; this.$nextTick(() => this.scrollToBottom()); },
+                saveApiKey() {
+                    if (this.apiKeyTemp.trim().length > 10) {
+                        this.apiKey = this.apiKeyTemp.trim();
+                        localStorage.setItem('gemini_api_key', this.apiKey);
+                        this.showKeySettings = false;
+                        this.toastText = 'Key 已儲存'; this.triggerToast();
+                    } else { alert('請輸入有效的 API Key'); }
                 },
-                enableSimulateMode() {
-                    if (confirm('是否開啟「時光機模式」模擬 3/14 17:00？(讓你測試自動導航功能)')) {
-                        this.simulatedTime = new Date('2026-03-14T17:00:00');
-                        this.checkActiveEvent();
-                        this.autoNavigate();
-                        alert('已切換至 3/14 17:00，請查看 Day 1 行程！');
+                scrollToBottom() { const c = document.getElementById('chatContainer'); if(c) c.scrollTop = c.scrollHeight; },
+                async sendChat() {
+                    if (!this.chatInput.trim()) return;
+                    if (!this.apiKey) { alert('請先設定 API Key'); this.showKeySettings = true; return; }
+
+                    const userMsg = this.chatInput;
+                    this.chatInput = '';
+                    this.chatHistory.push({ role: 'user', content: userMsg, time: new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'}) });
+                    this.scrollToBottom();
+                    this.isAiThinking = true;
+
+                    // Prepare Context (Simplified Itinerary)
+                    const context = JSON.stringify(this.days.map(d => ({ title: d.title, events: d.events.map(e => `${e.time} ${e.name}`) })));
+                    
+                    try {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [
+                                    { role: "user", parts: [{ text: `你是一個專業的東京導遊。這是使用者的行程表：${context}。請根據行程回答使用者的問題。使用者問：${userMsg}` }] }
+                                ]
+                            })
+                        });
+                        const data = await response.json();
+                        const aiText = data.candidates[0].content.parts[0].text;
+                        
+                        this.chatHistory.push({ role: 'ai', content: aiText, time: new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'}) });
+                        localStorage.setItem('chat_history', JSON.stringify(this.chatHistory));
+                    } catch (error) {
+                        console.error(error);
+                        this.chatHistory.push({ role: 'ai', content: '抱歉，連線出了點問題，請檢查 API Key 或網路。', time: 'System' });
+                    } finally {
+                        this.isAiThinking = false;
+                        this.$nextTick(() => this.scrollToBottom());
                     }
                 },
+                renderMarkdown(text) { return marked.parse(text); },
+
+                // ... (Other functions: speak, copy, save, etc. remain the same) ...
+                startClock() { setInterval(() => this.checkActiveEvent(), 60000); this.checkActiveEvent(); },
+                enableSimulateMode() { if (confirm('開啟時光機模擬 3/14 17:00？')) { this.simulatedTime = new Date('2026-03-14T17:00:00'); this.checkActiveEvent(); this.autoNavigate(); alert('已切換至 3/14 17:00！'); } },
                 getNow() { return this.simulatedTime || new Date(); },
                 checkActiveEvent() {
                     const now = this.getNow();
-                    // 簡單邏輯：只對應 Day 1-5 的日期
-                    const dateMap = { '14': 0, '15': 1, '16': 2, '17': 3, '18': 4 }; // 3/14 -> index 0
+                    const dateMap = { '14': 0, '15': 1, '16': 2, '17': 3, '18': 4 };
                     const day = now.getDate();
-                    const month = now.getMonth() + 1;
-                    
-                    if (month !== 3 || !dateMap.hasOwnProperty(day)) {
-                        this.activeEventId = null;
-                        return;
-                    }
-
+                    if (now.getMonth() + 1 !== 3 || !dateMap.hasOwnProperty(day)) { this.activeEventId = null; return; }
                     const dayIndex = dateMap[day];
                     const todayEvents = this.days[dayIndex].hasOptions ? this.days[dayIndex].options[this.days[dayIndex].selectedOption] : this.days[dayIndex].events;
-                    
                     let foundEvent = null;
-                    // 轉換現在時間為分鐘數 (例如 14:00 = 840)
                     const nowMins = now.getHours() * 60 + now.getMinutes();
-
-                    // 尋找「最後一個開始時間早於現在」的行程
                     todayEvents.forEach((ev, idx) => {
                         const [h, m] = ev.time.split(':').map(Number);
-                        const evMins = h * 60 + m;
-                        if (nowMins >= evMins) {
-                            foundEvent = `event-${dayIndex}-${idx}`;
-                        }
+                        if (nowMins >= h * 60 + m) foundEvent = `event-${dayIndex}-${idx}`;
                     });
                     this.activeEventId = foundEvent;
                 },
-                isCurrentEvent(dayIndex, event) {
-                    // 這裡簡化檢查：只要 ID 對上就是 Current
-                    // 實際要比對 event 物件在陣列中的位置，但因為 x-for 渲染有 index，我們用 ID 來對應最準
-                    // 在 HTML 中我們使用了 :id="'event-' + index + '-' + eIdx"
-                    // 這裡無法直接在函式內取得 eIdx，所以我們反向操作：
-                    // 在 HTML 呼叫此函式時，因為效能考量，我們改用 activeEventId 變數控制 class，而不在此計算
-                    return false; 
-                    // ^ 上面這行是因為我改用了 class binding logic in HTML: :class="{'active...': 'event-'+index+'-'+eIdx === activeEventId}"
-                    // 但因為 Alpine 在 HTML 裡寫邏輯太長，我們保留此函式做 helper
-                },
-                // 修正：在 HTML 中直接比對字串 'event-'+index+'-'+eIdx === activeEventId 比較快
-                
+                isCurrentEvent(dayIndex, event) { return false; }, // Handled in HTML class logic
                 autoNavigate() {
-                    // 如果有偵測到進行中行程，自動切換 Tab 並捲動
                     if (this.activeEventId) {
-                        const [_, dayIdx, evtIdx] = this.activeEventId.split('-');
-                        const targetTab = parseInt(dayIdx) + 3; // Day 1 is Tab 3
-                        this.swiperInstance.slideTo(targetTab);
-                        
-                        setTimeout(() => {
-                            const el = document.getElementById(this.activeEventId);
-                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }, 500);
+                        const [_, dayIdx] = this.activeEventId.split('-');
+                        this.swiperInstance.slideTo(parseInt(dayIdx) + 3);
+                        setTimeout(() => { const el = document.getElementById(this.activeEventId); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 500);
                     }
                 },
-
-                // Functions: Speak, Copy, Save... (保持不變)
-                speak(text) {
-                    if ('speechSynthesis' in window) {
-                        const utterance = new SpeechSynthesisUtterance(text);
-                        utterance.lang = 'ja-JP';
-                        utterance.rate = 0.9;
-                        window.speechSynthesis.speak(utterance);
-                    } else { alert('瀏覽器不支援發音'); }
-                },
+                speak(text) { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(text); u.lang = 'ja-JP'; u.rate = 0.9; window.speechSynthesis.speak(u); } else { alert('不支援發音'); } },
                 openTaxi(event) { if (event.taxi) { this.currentTaxi = event.taxi; this.showTaxiModal = true; } },
                 openPhrase(p, catName) { const catMap = { 'food': '餐廳', 'shop': '購物', 'help': '緊急' }; this.currentPhrase = { ...p, cat: catMap[catName] }; this.modalOpen = true; },
                 slideTo(index) { this.swiperInstance.slideTo(index); },
                 updateSwiperHeight() { setTimeout(() => { this.swiperInstance.updateAutoHeight(300); this.swiperInstance.update(); }, 100); },
                 toggleCheck(item) { item.checked = !item.checked; this.saveChecks(); },
-                saveChecks() { 
-                    try {
-                        localStorage.setItem('tokyo_2026_fixed_v8', JSON.stringify(this.prepData));
-                        this.toastText = '已儲存'; this.triggerToast();
-                    } catch(e) { console.error(e); }
-                },
-                saveMoney() {
-                    try {
-                        localStorage.setItem('tokyo_2026_money_v1', JSON.stringify(this.moneyList));
-                        this.toastText = '已儲存'; this.triggerToast();
-                    } catch(e) { console.error(e); }
-                },
-                addMoney() {
-                    if(!this.newMoney.title || !this.newMoney.amount) return alert('請輸入');
-                    this.moneyList.unshift({ title: this.newMoney.title, amount: this.newMoney.amount, cat: this.newMoney.cat, date: new Date().toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'}) });
-                    this.saveMoney(); this.showMoneyModal = false; this.$nextTick(() => this.updateSwiperHeight());
-                },
+                saveChecks() { try { localStorage.setItem('tokyo_2026_fixed_v8', JSON.stringify(this.prepData)); this.toastText = '已儲存'; this.triggerToast(); } catch(e) {} },
+                saveMoney() { try { localStorage.setItem('tokyo_2026_money_v1', JSON.stringify(this.moneyList)); this.toastText = '已儲存'; this.triggerToast(); } catch(e) {} },
+                addMoney() { if(!this.newMoney.title || !this.newMoney.amount) return; this.moneyList.unshift({ title: this.newMoney.title, amount: this.newMoney.amount, cat: this.newMoney.cat, date: new Date().toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'}) }); this.saveMoney(); this.showMoneyModal = false; this.$nextTick(() => this.updateSwiperHeight()); },
                 deleteMoney(idx) { if(confirm('刪除？')) { this.moneyList.splice(idx, 1); this.saveMoney(); this.$nextTick(() => this.updateSwiperHeight()); } },
                 resetMoney() { if(confirm('清空？')) { this.moneyList = []; this.saveMoney(); this.$nextTick(() => this.updateSwiperHeight()); } },
                 getMoneyIcon(cat) { const map = { 'food': { icon: 'ph-bowl-food', bg: 'bg-orange-100 text-orange-600' }, 'shop': { icon: 'ph-shopping-bag', bg: 'bg-pink-100 text-pink-600' }, 'traffic': { icon: 'ph-train', bg: 'bg-blue-100 text-blue-600' }, 'other': { icon: 'ph-dots-three-circle', bg: 'bg-gray-100 text-gray-600' } }; return map[cat] || map['other']; },
-                exportShopping() {
-                    let text = "🛍️ 東京戰利品清單\n";
-                    for (const [cat, items] of Object.entries(this.prepData.shopping)) { if (items.length > 0) { text += `\n【${cat}】\n`; items.forEach(item => { text += `${item.checked ? "✅" : "⬜"} ${item.name} ${item.desc ? '('+item.desc+')' : ''}\n`; }); } }
-                    this.copyToClipboard(text);
-                },
-                exportMoney() {
-                    let text = "💸 東京消費紀錄\n"; text += `📅 日期: ${new Date().toLocaleDateString()}\n`; text += `💰 總支出: ¥${this.totalSpent.toLocaleString()}\n------------------\n`;
-                    this.moneyList.forEach(item => { text += `${item.date} | ${item.title}: ¥${Number(item.amount).toLocaleString()}\n`; });
-                    this.copyToClipboard(text);
-                },
-                copyToClipboard(text) {
-                    if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(text).then(() => { this.toastText = '已複製'; this.triggerToast(); }); } 
-                    else { let ta = document.createElement("textarea"); ta.value = text; ta.style.position="fixed"; ta.style.left="-9999px"; document.body.appendChild(ta); ta.focus(); ta.select(); try { document.execCommand('copy'); this.toastText = '已複製'; this.triggerToast(); } catch (err) {} document.body.removeChild(ta); }
-                },
+                exportShopping() { let text = "🛍️ 東京戰利品清單\n"; for (const [cat, items] of Object.entries(this.prepData.shopping)) { if (items.length > 0) { text += `\n【${cat}】\n`; items.forEach(item => { text += `${item.checked ? "✅" : "⬜"} ${item.name} ${item.desc ? '('+item.desc+')' : ''}\n`; }); } } this.copyToClipboard(text); },
+                exportMoney() { let text = "💸 東京消費紀錄\n"; text += `📅 日期: ${new Date().toLocaleDateString()}\n`; text += `💰 總支出: ¥${this.totalSpent.toLocaleString()}\n------------------\n`; this.moneyList.forEach(item => { text += `${item.date} | ${item.title}: ¥${Number(item.amount).toLocaleString()}\n`; }); this.copyToClipboard(text); },
+                copyToClipboard(text) { if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(text).then(() => { this.toastText = '已複製'; this.triggerToast(); }); } else { let ta = document.createElement("textarea"); ta.value = text; ta.style.position="fixed"; ta.style.left="-9999px"; document.body.appendChild(ta); ta.focus(); ta.select(); try { document.execCommand('copy'); this.toastText = '已複製'; this.triggerToast(); } catch (err) {} document.body.removeChild(ta); } },
                 resetData() { if(confirm('重置清單？')) { this.prepData = JSON.parse(JSON.stringify(defaultPrepData)); this.saveChecks(); this.$nextTick(() => this.updateSwiperHeight()); } },
                 triggerToast() { this.showToast = false; setTimeout(() => this.showToast = true, 50); setTimeout(() => this.showToast = false, 2000); },
                 openAddModal() { this.newItem = { cat: '藥妝與保健', name: '', desc: '' }; this.showAddModal = true; },
                 addItem() { if (!this.newItem.name) return; this.prepData.shopping[this.newItem.cat].push({ name: this.newItem.name, desc: this.newItem.desc || '新增項目', checked: false }); this.saveChecks(); this.showAddModal = false; this.$nextTick(() => this.updateSwiperHeight()); },
                 deleteItem(cat, idx) { if(confirm('刪除？')) { this.prepData.shopping[cat].splice(idx, 1); this.saveChecks(); this.$nextTick(() => this.updateSwiperHeight()); } },
-                
                 async initWeather() { await this.fetchW(35.6895, 139.6917, 'tokyo'); await this.fetchW(35.2380, 139.0460, 'hakone'); },
                 async fetchW(lat, lon, key) { try { const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=Asia%2FTokyo`); const d = await r.json(); const c = d.current_weather.weathercode; const t = Math.round(d.current_weather.temperature); let i = 'ph-sun', s = '晴朗'; if(c>=1 && c<=3) {i='ph-cloud-sun';s='多雲';} else if(c>=45 && c<=48) {i='ph-cloud-fog';s='霧氣';} else if(c>=51 && c<=67) {i='ph-drop';s='雨天';} let feel = t<=10?'寒冷':t<=18?'微涼':t<=25?'舒適':'炎熱'; this.weatherData[key] = { temp: `${t}°C`, icon: i, desc: `${s} • ${feel}` }; } catch { this.weatherData[key] = { temp: '-', icon: 'ph-warning', desc: '離線' }; } },
                 getCurrentWeather() { if (this.activeIndex === 2 || this.activeIndex === 3) return { ...this.weatherData.hakone, loc: '箱根' }; return { ...this.weatherData.tokyo, loc: '東京' }; },
-                
                 getIconColor(t) { const c = { 'transport': 'bg-blue-500', 'food': 'bg-orange-400', 'activity': 'bg-slate-700', 'sakura': 'bg-pink-400', 'hotel': 'bg-indigo-500', 'flight': 'bg-sky-500', 'luggage': 'bg-teal-500' }; return c[t] || 'bg-slate-400'; },
                 getIconClass(t) { const i = { 'transport': 'ph-bold ph-train', 'food': 'ph-bold ph-bowl-food', 'activity': 'ph-bold ph-camera', 'sakura': 'ph-fill ph-flower-lotus', 'hotel': 'ph-bold ph-bed', 'flight': 'ph-bold ph-airplane-tilt', 'luggage': 'ph-bold ph-suitcase' }; return i[t] || 'ph-circle'; },
                 getTagColor(t) { if(t==='需預約')return 'bg-red-100 text-red-600'; if(t==='必吃' || t==='需搶位' || t==='周遊券OK')return 'bg-orange-100 text-orange-600'; if(t==='賞櫻點')return 'bg-pink-100 text-pink-600'; return 'bg-blue-100 text-blue-600'; },
-
-                // Data
+                // Data (Days) ... (保持不變)
                 days: [
                     {
                         shortTitle: 'D1 3/14(六)', title: 'Day 1: 新宿之夜', hotel: 'APA Hotel Shinjuku-Gyoemmae',
