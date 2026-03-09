@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     
-    <title>2026 東京賞櫻 (v39 滑順修復版)</title>
+    <title>2026 東京賞櫻 (v39 全域版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -30,10 +30,9 @@
         .ios-card { background: white; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 20px; transition: transform 0.2s; }
         .ios-card:active { transform: scale(0.995); }
         
-        /* Swiper Fixes - v39 關鍵修正 */
+        /* Swiper Fixes */
         .swiper { width: 100%; height: auto; }
-        /* 強制最小高度，防止內容太少時滑動區域消失 */
-        .swiper-slide { height: auto; min-height: 80vh; padding-bottom: 100px; } 
+        .swiper-slide { height: auto; min-height: 80vh; } /* 強制高度 */
 
         /* Tabs */
         .tab-btn { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); white-space: nowrap; border-radius: 9999px; padding: 8px 16px; font-size: 13px; font-weight: bold; scroll-snap-align: center; }
@@ -61,6 +60,15 @@
 
     <div x-show="showToast" class="fixed top-safe-top right-4 z-[9999] bg-black/70 text-white px-4 py-2 rounded-full text-xs font-bold backdrop-blur-md flex items-center gap-2 toast-msg" style="top: calc(env(safe-area-inset-top) + 20px);" x-cloak>
         <i class="ph-bold ph-check-circle text-green-400"></i> <span x-text="toastText"></span>
+    </div>
+
+    <div x-show="days.length === 0" class="fixed inset-0 z-[99999] bg-white flex items-center justify-center text-center p-6" x-cloak>
+        <div>
+            <i class="ph-duotone ph-warning text-4xl text-red-500 mb-2"></i>
+            <h2 class="text-lg font-bold text-slate-800">資料載入異常</h2>
+            <p class="text-sm text-slate-500 mb-4">行程資料未正確載入。</p>
+            <button @click="location.reload()" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm">重新整理</button>
+        </div>
     </div>
 
     <button @click="openChat()" class="fixed bottom-6 right-6 z-[5000] w-14 h-14 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full shadow-xl flex items-center justify-center text-white active:scale-90 transition-transform border-4 border-white/20">
@@ -219,208 +227,208 @@
     <div x-show="showMoneyModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" style="display: none;" @click.self="showMoneyModal = false"><div class="bg-white w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl relative animate-[fadeIn_0.2s_ease-out]"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-slate-800">記一筆 💸</h3><button @click="showMoneyModal = false" class="bg-gray-100 p-2 rounded-full active:bg-gray-200"><i class="ph-bold ph-x"></i></button></div><div class="space-y-3"><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">項目名稱</label><input x-model="newMoney.title" type="text" placeholder="午餐 / 伴手禮" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base font-bold text-slate-700 outline-none focus:border-blue-500"></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">金額 (日幣)</label><input x-model="newMoney.amount" type="number" inputmode="numeric" placeholder="¥" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xl font-mono font-bold text-slate-700 outline-none focus:border-blue-500"></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">分類</label><div class="grid grid-cols-4 gap-2"><button @click="newMoney.cat = 'food'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'food' ? 'bg-orange-100 border-orange-400 text-orange-600' : 'bg-white border-slate-200 text-slate-400'">飲食</button><button @click="newMoney.cat = 'shop'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'shop' ? 'bg-pink-100 border-pink-400 text-pink-600' : 'bg-white border-slate-200 text-slate-400'">購物</button><button @click="newMoney.cat = 'traffic'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'traffic' ? 'bg-blue-100 border-blue-400 text-blue-600' : 'bg-white border-slate-200 text-slate-400'">交通</button><button @click="newMoney.cat = 'other'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'other' ? 'bg-gray-100 border-gray-400 text-gray-600' : 'bg-white border-slate-200 text-slate-400'">其他</button></div></div><button @click="addMoney()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl mt-2 active:scale-95 transition-transform shadow-md">儲存紀錄</button></div></div></div>
 
     <script>
-        function tripData() {
-            // Data Injection (Safe)
-            let daysData = [];
-            try { daysData = JSON.parse(document.getElementById('safe-data-days').textContent); } catch(e) { console.error(e); }
+    // ⚠️ CRITICAL: Data moved to Global Scope to prevent function scope issues
+    const TOKYO_DAYS = [
+        { "shortTitle": "D1 3/14", "title": "Day 1: 新宿之夜", "hotel": "APA Hotel Shinjuku-Gyoemmae", "events": [ { "time": "14:55", "type": "flight", "name": "抵達成田機場", "desc": "JL0802 降落 T2。", "location": "Narita Airport T2" }, { "time": "16:20", "type": "transport", "name": "前往市區", "desc": "搭乘 N'EX 成田特快直達新宿。", "location": "JR Shinjuku Station" }, { "time": "18:15", "type": "hotel", "name": "Check-in", "desc": "飯店 Check-in。", "location": "APA Hotel Shinjuku-Gyoemmae" }, { "time": "19:00", "type": "food", "name": "新宿晚餐", "desc": "推薦 Udon Shin 或 叙叙苑。", "location": "Shinjuku" } ] },
+        { "shortTitle": "D2 3/15", "title": "Day 2: 箱根溫泉", "hotel": "Hakone Mizunoto", "events": [ { "time": "09:00", "type": "transport", "name": "新宿出發", "desc": "浪漫特快前往箱根。", "location": "Shinjuku Station" }, { "time": "11:30", "type": "food", "name": "強羅午餐", "desc": "田村銀勝亭豆腐鍋。", "location": "Gora" }, { "time": "13:30", "type": "activity", "name": "雕刻之森", "desc": "戶外美術館。", "location": "Hakone Open-Air Museum" }, { "time": "16:30", "type": "hotel", "name": "溫泉 Check-in", "desc": "享受一泊二食。", "location": "Hakone Mizunoto" } ] },
+        { "shortTitle": "D3 3/16", "title": "Day 3: 海盜船", "hotel": "APA Otsuka", "events": [ { "time": "09:30", "type": "activity", "name": "大涌谷", "desc": "看富士山吃黑蛋。", "location": "Owakudani" }, { "time": "11:00", "type": "activity", "name": "海盜船", "desc": "遊蘆之湖。", "location": "Togendai" }, { "time": "14:30", "type": "transport", "name": "回東京", "desc": "浪漫特快回新宿轉山手線。", "location": "Hakone Yumoto" }, { "time": "18:30", "type": "food", "name": "大塚晚餐", "desc": "Onigiri Bongo 飯糰。", "location": "Otsuka" } ] },
+        { "shortTitle": "D4 3/17", "title": "Day 4: 澀谷", "hotel": "APA Otsuka", "events": [ { "time": "09:30", "type": "activity", "name": "明治神宮", "desc": "散步。", "location": "Meiji Jingu" }, { "time": "11:00", "type": "activity", "name": "原宿逛街", "desc": "表參道。", "location": "Harajuku" }, { "time": "14:30", "type": "activity", "name": "SHIBUYA SKY", "desc": "展望台 (需預約)。", "location": "SHIBUYA SKY" }, { "time": "17:00", "type": "food", "name": "Yoroniku", "desc": "南青山燒肉。", "location": "Yoroniku" } ] },
+        { "shortTitle": "D5 3/18", "title": "Day 5: 上野", "hotel": "Sweet Home", "hasOptions": true, "selectedOption": "A", "optionALabel": "淺草", "optionBLabel": "賞櫻", "options": { "A": [ { "time": "09:00", "type": "activity", "name": "淺草雷門", "desc": "仲見世通。", "location": "Senso-ji" }, { "time": "14:40", "type": "transport", "name": "Skyliner", "desc": "前往成田機場。", "location": "Ueno" } ], "B": [ { "time": "09:00", "type": "sakura", "name": "千鳥之淵", "desc": "划船賞櫻。", "location": "Chidorigafuchi" }, { "time": "14:40", "type": "transport", "name": "Skyliner", "desc": "前往成田機場。", "location": "Ueno" } ] }, "events": [] }
+    ];
 
-            const defaultPrepData = { ticketsWallet: { 'Skyliner': '', 'Disney': '', 'Hotel': '', 'VJW': '' }, tickets: [ { name: 'N\'EX 成田特快', desc: '機場 ➔ 新宿', link: 'https://www.jreast.co.jp/multi/zh-CHT/nex/' }, { name: 'Skyliner', desc: '上野 ➔ 機場', link: 'https://www.keisei.co.jp/keisei/tetudou/skyliner/tc/' }, { name: '箱根周遊券 (2日)', desc: '新宿小田急旅遊中心', link: 'https://www.odakyu.jp/tc/passes/hakone/' }, { name: '浪漫特快 (特急券)', desc: '需劃位 (展望席)', link: 'https://www.web-odakyu.com/e-romancecar/' }, { name: '蕃 YORONIKU', desc: '2/1 搶訂 18:30', link: 'https://tabelog.com/tw/tokyo/A1303/A130302/13211927/' }, { name: 'SHIBUYA SKY', desc: '預約 15:00-16:00', link: 'https://www.shibuya-scramble-square.com/sky/ticket/zh_tw/' } ], luggage: { '證件': [{ name: '護照', checked: false }, { name: 'Visit Japan Web (入境通關 QR Code)', checked: false }, { name: '日幣/信用卡', checked: false }, { name: '西瓜卡', checked: false }], '電子': [{ name: '網卡/eSim', checked: false }, { name: '行動電源', checked: false }, { name: '充電組', checked: false }], '生活': [{ name: '衣物 (5天)', checked: false }, { name: '好走的鞋', checked: false }, { name: '牙刷/藥品', checked: false }] }, shopping: { '藥妝與保健': [ { name: '合力他命 EX Plus', desc: '緩解疲勞 (每人限購)', checked: false }, { name: 'EVE 止痛藥 (藍/白)', desc: '頭痛生理痛神藥', checked: false }, { name: 'Wakamoto 若元錠', desc: '腸胃保健', checked: false }, { name: 'DHC 護唇膏', desc: '便宜好用', checked: false }, { name: '眼藥水 (Lycee/參天)', desc: '涼感/小花', checked: false } ], '零食與伴手禮': [ { name: 'Tokyo Banana', desc: '經典東京香蕉蛋糕', checked: false }, { name: 'NY Perfect Cheese', desc: '起司脆餅 (機場/東京站)', checked: false }, { name: 'Royce 生巧克力', desc: '需冷藏 (機場買)', checked: false }, { name: '白色戀人', desc: '北海道名產 (機場有)', checked: false } ], '服飾與其他': [ { name: 'Uniqlo 發熱衣', desc: '比台灣便宜很多', checked: false }, { name: 'New Balance', desc: '日本限定配色', checked: false } ] } };
-            let initialData = defaultPrepData;
-            let initialMoney = [];
-            
-            try { 
-                const s = localStorage.getItem('tokyo_2026_fixed_v8'); 
-                if(s && s !== "undefined") initialData = JSON.parse(s); 
-                const m = localStorage.getItem('tokyo_2026_money_v1'); 
-                if(m && m !== "undefined") initialMoney = JSON.parse(m); 
-            } catch(e){ console.error("Data error", e); }
+    function tripData() {
+        const defaultPrepData = { ticketsWallet: { 'Skyliner': '', 'Disney': '', 'Hotel': '', 'VJW': '' }, tickets: [ { name: 'N\'EX 成田特快', desc: '機場 ➔ 新宿', link: 'https://www.jreast.co.jp/multi/zh-CHT/nex/' }, { name: 'Skyliner', desc: '上野 ➔ 機場', link: 'https://www.keisei.co.jp/keisei/tetudou/skyliner/tc/' }, { name: '箱根周遊券 (2日)', desc: '新宿小田急旅遊中心', link: 'https://www.odakyu.jp/tc/passes/hakone/' }, { name: '浪漫特快 (特急券)', desc: '需劃位 (展望席)', link: 'https://www.web-odakyu.com/e-romancecar/' }, { name: '蕃 YORONIKU', desc: '2/1 搶訂 18:30', link: 'https://tabelog.com/tw/tokyo/A1303/A130302/13211927/' }, { name: 'SHIBUYA SKY', desc: '預約 15:00-16:00', link: 'https://www.shibuya-scramble-square.com/sky/ticket/zh_tw/' } ], luggage: { '證件': [{ name: '護照', checked: false }, { name: 'Visit Japan Web (入境通關 QR Code)', checked: false }, { name: '日幣/信用卡', checked: false }, { name: '西瓜卡', checked: false }], '電子': [{ name: '網卡/eSim', checked: false }, { name: '行動電源', checked: false }, { name: '充電組', checked: false }], '生活': [{ name: '衣物 (5天)', checked: false }, { name: '好走的鞋', checked: false }, { name: '牙刷/藥品', checked: false }] }, shopping: { '藥妝與保健': [ { name: '合力他命 EX Plus', desc: '緩解疲勞 (每人限購)', checked: false }, { name: 'EVE 止痛藥 (藍/白)', desc: '頭痛生理痛神藥', checked: false }, { name: 'Wakamoto 若元錠', desc: '腸胃保健', checked: false }, { name: 'DHC 護唇膏', desc: '便宜好用', checked: false }, { name: '眼藥水 (Lycee/參天)', desc: '涼感/小花', checked: false } ], '零食與伴手禮': [ { name: 'Tokyo Banana', desc: '經典東京香蕉蛋糕', checked: false }, { name: 'NY Perfect Cheese', desc: '起司脆餅 (機場/東京站)', checked: false }, { name: 'Royce 生巧克力', desc: '需冷藏 (機場買)', checked: false }, { name: '白色戀人', desc: '北海道名產 (機場有)', checked: false } ], '服飾與其他': [ { name: 'Uniqlo 發熱衣', desc: '比台灣便宜很多', checked: false }, { name: 'New Balance', desc: '日本限定配色', checked: false } ] } };
+        let initialData = defaultPrepData;
+        let initialMoney = [];
+        try { const s = localStorage.getItem('tokyo_2026_fixed_v8'); if(s && s !== "undefined") initialData = JSON.parse(s); const m = localStorage.getItem('tokyo_2026_money_v1'); if(m && m !== "undefined") initialMoney = JSON.parse(m); } catch(e){}
 
-            return {
-                activeIndex: 0, showChatModal: false, showKeySettings: false, swiperInstance: null,
-                apiKey: localStorage.getItem('gemini_api_key') || '', apiKeyTemp: '', chatInput: '', isAiThinking: false,
-                modelId: localStorage.getItem('gemini_model_id') || 'gemini-2.5-flash', modelIdTemp: '',
-                availableModels: [],
-                chatHistory: JSON.parse(localStorage.getItem('chat_history') || '[]'),
-                prepData: initialData, moneyList: initialMoney, days: daysData,
-                weatherData: { tokyo: { temp: '--', icon: 'ph-dots-three', desc: '載入中' }, hakone: { temp: '--', icon: 'ph-dots-three', desc: '載入中' } },
-                toastText: '', showToast: false,
-                modalOpen: false, showAddModal: false, showMoneyModal: false, showTaxiModal: false,
-                currentPhrase: { jp: '', cn: '', romaji: '', cat: '' }, currentTaxi: { jpName: '', address: '' },
-                newItem: { cat: '藥妝與保健', name: '', desc: '' }, newMoney: { title: '', amount: '', cat: 'food' },
-                phraseTab: 'food',
-                phrases: { food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ], shop: [ { jp: 'いくらですか？', cn: '請問多少錢？', romaji: 'Ikura desuka?' }, { jp: 'クレジットカードは使えますか？', cn: '可用信用卡嗎？', romaji: 'Kurejitto kaado wa tsukaemasuka?' }, { jp: '新しい在庫はありますか？', cn: '有新庫存嗎？', romaji: 'Atarashii zaiko wa arimasuka?' }, { jp: '免税できますか？', cn: '可免稅嗎？', romaji: 'Menzei dekimasuka?' }, { jp: '袋を買います', cn: '買袋子', romaji: 'Fukuro o kaimasu' } ], help: [ { jp: '駅はどこですか？', cn: '車站在哪裡？', romaji: 'Eki wa doko desuka?' }, { jp: '写真を撮ってもらえますか？', cn: '可以幫我拍照嗎？', romaji: 'Shashin o totte moraemasuka?' }, { jp: 'すみません', cn: '不好意思 / 借過', romaji: 'Sumimasen' }, { jp: '道に迷いました', cn: '我迷路了', romaji: 'Michi ni mayoimashita' }, { jp: 'トイレはどこ？', cn: '廁所在哪？', romaji: 'Toire wa doko?' } ] },
+        return {
+            activeIndex: 0, showChatModal: false, showKeySettings: false, swiperInstance: null,
+            apiKey: localStorage.getItem('gemini_api_key') || '', apiKeyTemp: '', chatInput: '', isAiThinking: false,
+            modelId: localStorage.getItem('gemini_model_id') || 'gemini-2.5-flash', modelIdTemp: '',
+            availableModels: [],
+            chatHistory: JSON.parse(localStorage.getItem('chat_history') || '[]'),
+            prepData: initialData, moneyList: initialMoney, 
+            days: TOKYO_DAYS, // Use global data
+            weatherData: { tokyo: { temp: '--', icon: 'ph-dots-three', desc: '載入中' }, hakone: { temp: '--', icon: 'ph-dots-three', desc: '載入中' } },
+            toastText: '', showToast: false,
+            modalOpen: false, showAddModal: false, showMoneyModal: false, showTaxiModal: false,
+            currentPhrase: { jp: '', cn: '', romaji: '', cat: '' }, currentTaxi: { jpName: '', address: '' },
+            newItem: { cat: '藥妝與保健', name: '', desc: '' }, newMoney: { title: '', amount: '', cat: 'food' },
+            phraseTab: 'food',
+            phrases: { food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ], shop: [ { jp: 'いくらですか？', cn: '請問多少錢？', romaji: 'Ikura desuka?' }, { jp: 'クレジットカードは使えますか？', cn: '可用信用卡嗎？', romaji: 'Kurejitto kaado wa tsukaemasuka?' }, { jp: '新しい在庫はありますか？', cn: '有新庫存嗎？', romaji: 'Atarashii zaiko wa arimasuka?' }, { jp: '免税できますか？', cn: '可免稅嗎？', romaji: 'Menzei dekimasuka?' }, { jp: '袋を買います', cn: '買袋子', romaji: 'Fukuro o kaimasu' } ], help: [ { jp: '駅はどこですか？', cn: '車站在哪裡？', romaji: 'Eki wa doko desuka?' }, { jp: '写真を撮ってもらえますか？', cn: '可以幫我拍照嗎？', romaji: 'Shashin o totte moraemasuka?' }, { jp: 'すみません', cn: '不好意思 / 借過', romaji: 'Sumimasen' }, { jp: '道に迷いました', cn: '我迷路了', romaji: 'Michi ni mayoimashita' }, { jp: 'トイレはどこ？', cn: '廁所在哪？', romaji: 'Toire wa doko?' } ] },
 
-                get totalSpent() { return this.moneyList.reduce((acc, item) => acc + Number(item.amount), 0); },
+            get totalSpent() { return this.moneyList.reduce((acc, item) => acc + Number(item.amount), 0); },
 
-                initApp() { 
-                    this.initWeather(); 
-                    this.modelIdTemp = this.modelId; 
-                    this.apiKeyTemp = this.apiKey;
-                    this.startClock();
-                    // Swiper Init with Delay
-                    setTimeout(() => {
-                        this.swiperInstance = new Swiper(".mySwiper", { 
-                            autoHeight: true, 
-                            spaceBetween: 20, 
-                            observer: true, 
-                            observeParents: true,
-                            speed: 400, 
-                            on: { 
-                                slideChange: (s) => { 
-                                    this.activeIndex = s.activeIndex; 
-                                    this.centerTab(s.activeIndex); // Auto Center
-                                    window.scrollTo({ top: 0, behavior: 'smooth' }); 
-                                } 
+            initApp() { 
+                this.initWeather(); 
+                this.modelIdTemp = this.modelId; 
+                this.apiKeyTemp = this.apiKey;
+                this.startClock();
+                // Swiper Init with Delay
+                setTimeout(() => {
+                    this.swiperInstance = new Swiper(".mySwiper", { 
+                        autoHeight: true, 
+                        spaceBetween: 20, 
+                        observer: true, 
+                        observeParents: true,
+                        speed: 400, 
+                        on: { 
+                            slideChange: (s) => { 
+                                this.activeIndex = s.activeIndex; 
+                                this.centerTab(s.activeIndex); // Auto Center
+                                window.scrollTo({ top: 0, behavior: 'smooth' }); 
                             } 
-                        });
-                        setTimeout(() => this.autoNavigate(), 1000);
-                    }, 500); 
-                    
-                    if (!this.prepData || !this.prepData.luggage) { this.resetData(); }
-                },
-
-                // v37: 核心修正 - Tab 自動置中
-                centerTab(index) {
-                    const container = document.getElementById('tabContainer');
-                    const tabBtn = document.getElementById(`tab-${index}`);
-                    if (container && tabBtn) {
-                        const scrollLeft = tabBtn.offsetLeft - (container.clientWidth / 2) + (tabBtn.clientWidth / 2);
-                        container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
-                    }
-                },
-
-                // v37: 語音修正 (確保瀏覽器 API 可用)
-                speak(text) { 
-                    if ('speechSynthesis' in window) { 
-                        window.speechSynthesis.cancel(); // 停止上一句
-                        const u = new SpeechSynthesisUtterance(text); 
-                        u.lang = 'ja-JP'; 
-                        u.rate = 0.9; 
-                        window.speechSynthesis.speak(u); 
-                    } else { 
-                        alert('你的瀏覽器不支援發音'); 
-                    } 
-                },
-
-                openChat() { this.showChatModal = true; this.$nextTick(() => this.scrollToBottom()); },
-                
-                async checkModels() {
-                    const k = this.apiKeyTemp.trim();
-                    if(!k) return alert('Key?');
-                    try {
-                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${k}`);
-                        const data = await res.json();
-                        if(!res.ok) throw new Error(data.error?.message);
-                        this.availableModels = data.models.filter(m => m.supportedGenerationMethods.includes('generateContent')).map(m => m.name.replace('models/', ''));
-                        alert(`成功: ${this.availableModels.length} 個`);
-                    } catch (e) { alert(`失敗: ${e.message}`); }
-                },
-
-                saveSettings() {
-                    localStorage.setItem('gemini_api_key', this.apiKey = this.apiKeyTemp.trim());
-                    localStorage.setItem('gemini_model_id', this.modelId = this.modelIdTemp.trim());
-                    this.showKeySettings = false;
-                    this.toastText = '設定已儲存'; this.triggerToast();
-                },
-
-                async sendChat() { 
-                    if(!this.chatInput.trim()) return;
-                    const msg = this.chatInput; this.chatInput = '';
-                    this.pushMsg('user', msg);
-                    this.performChat(msg, true);
-                },
-
-                async performChat(userMsg, withContext) {
-                    if (!this.apiKey) { alert('No Key'); this.showKeySettings = true; return; }
-                    this.isAiThinking = true;
-                    const cleanModelId = this.modelId.replace('models/', '');
-                    const payload = { contents: [{ role: "user", parts: [{ text: userMsg }] }] };
-
-                    if (withContext) {
-                        const simpleContext = this.days.map(d => {
-                            let evs = d.hasOptions ? d.options[d.selectedOption] : d.events;
-                            return `${d.shortTitle}: ` + evs.map(e => e.name).join(', ');
-                        }).join('\n');
-                        payload.contents[0].parts[0].text = `[指令] 你是東京導遊。這是行程表：\n${simpleContext}\n\n[規則] 除非問起，否則不要複誦行程。請簡短回答。\n\n問：${userMsg}`;
-                    }
-
-                    try {
-                        const controller = new AbortController();
-                        setTimeout(() => controller.abort(), 60000);
-                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cleanModelId}:generateContent?key=${this.apiKey}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload),
-                            signal: controller.signal
-                        });
-                        
-                        if (!res.ok) throw new Error((await res.json()).error?.message);
-                        const data = await res.json();
-                        this.pushMsg('ai', data.candidates[0].content.parts[0].text);
-                    } catch (e) {
-                        let msg = e.message;
-                        if(e.name === 'AbortError') msg = '連線逾時 (請檢查網路)';
-                        this.pushMsg('ai', `Error: ${msg}`);
-                    } finally {
-                        this.isAiThinking = false;
-                    }
-                },
-
-                pushMsg(role, content) { 
-                    this.chatHistory.push({ role, content, time: new Date().toLocaleTimeString() }); 
-                    localStorage.setItem('chat_history', JSON.stringify(this.chatHistory));
-                    this.$nextTick(() => this.scrollToBottom());
-                },
-                scrollToBottom() { const c = document.getElementById('chatContainer'); if(c) c.scrollTop = c.scrollHeight; },
-                renderMarkdown(text) { return marked.parse(text); },
-                triggerToast() { this.toast(this.toastText); },
-                toast(t) { this.toastText = t; this.showToast = true; setTimeout(() => this.showToast = false, 2000); },
-                async initWeather() { await this.fetchW(35.6895, 139.6917, 'tokyo'); await this.fetchW(35.2380, 139.0460, 'hakone'); },
-                async fetchW(lat, lon, key) { try { const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=Asia%2FTokyo`); const d = await r.json(); const c = d.current_weather.weathercode; const t = Math.round(d.current_weather.temperature); let i = 'ph-sun'; if(c>=1) i='ph-cloud'; this.weatherData[key] = { temp: `${t}°C`, icon: i, desc: '' }; } catch { this.weatherData[key] = { temp: '-', icon: 'ph-warning', desc: '離線' }; } },
-                getCurrentWeather() { if (this.activeIndex === 2 || this.activeIndex === 3) return { ...this.weatherData.hakone, loc: '箱根' }; return { ...this.weatherData.tokyo, loc: '東京' }; },
-                slideTo(i) { this.swiperInstance.slideTo(i); },
-                updateSwiperHeight() { setTimeout(() => { this.swiperInstance.updateAutoHeight(300); this.swiperInstance.update(); }, 100); },
-                toggleCheck(item) { item.checked = !item.checked; this.saveChecks(); },
-                saveChecks() { try { localStorage.setItem('tokyo_2026_fixed_v8', JSON.stringify(this.prepData)); } catch(e) {} },
-                addMoney() { if(!this.newMoney.title || !this.newMoney.amount) return; this.moneyList.unshift({ title: this.newMoney.title, amount: this.newMoney.amount, cat: this.newMoney.cat, date: new Date().toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'}) }); this.saveMoney(); this.showMoneyModal = false; },
-                saveMoney() { try { localStorage.setItem('tokyo_2026_money_v1', JSON.stringify(this.moneyList)); this.toastText = '已儲存'; this.triggerToast(); } catch(e) {} },
-                deleteMoney(idx) { if(confirm('刪除？')) { this.moneyList.splice(idx, 1); this.saveMoney(); } },
-                resetMoney() { if(confirm('清空？')) { this.moneyList = []; this.saveMoney(); } },
-                getMoneyIcon(cat) { const map = { 'food': { icon: 'ph-bowl-food', bg: 'bg-orange-100 text-orange-600' }, 'shop': { icon: 'ph-shopping-bag', bg: 'bg-pink-100 text-pink-600' }, 'traffic': { icon: 'ph-train', bg: 'bg-blue-100 text-blue-600' }, 'other': { icon: 'ph-dots-three-circle', bg: 'bg-gray-100 text-gray-600' } }; return map[cat] || map['other']; },
-                exportShopping() { let text = "🛍️ 東京戰利品清單\n"; for (const [cat, items] of Object.entries(this.prepData.shopping)) { if (items.length > 0) { text += `\n【${cat}】\n`; items.forEach(item => { text += `${item.checked ? "✅" : "⬜"} ${item.name} ${item.desc ? '('+item.desc+')' : ''}\n`; }); } } this.copyToClipboard(text); },
-                exportMoney() { let text = "💸 東京消費紀錄\n"; text += `📅 日期: ${new Date().toLocaleDateString()}\n`; text += `💰 總支出: ¥${this.totalSpent.toLocaleString()}\n------------------\n`; this.moneyList.forEach(item => { text += `${item.date} | ${item.title}: ¥${Number(item.amount).toLocaleString()}\n`; }); this.copyToClipboard(text); },
-                copyToClipboard(text) { if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(text).then(() => { this.toastText = '已複製'; this.triggerToast(); }); } else { let ta = document.createElement("textarea"); ta.value = text; ta.style.position="fixed"; ta.style.left="-9999px"; document.body.appendChild(ta); ta.focus(); ta.select(); try { document.execCommand('copy'); this.toastText = '已複製'; this.triggerToast(); } catch (err) {} document.body.removeChild(ta); } },
-                resetData() { if(confirm('重置清單？')) { this.prepData = JSON.parse(JSON.stringify(defaultPrepData)); this.saveChecks(); } },
-                openAddModal() { this.newItem = { cat: '藥妝與保健', name: '', desc: '' }; this.showAddModal = true; },
-                addItem() { if (!this.newItem.name) return; this.prepData.shopping[this.newItem.cat].push({ name: this.newItem.name, desc: this.newItem.desc || '新增項目', checked: false }); this.saveChecks(); this.showAddModal = false; },
-                deleteItem(cat, idx) { if(confirm('刪除？')) { this.prepData.shopping[cat].splice(idx, 1); this.saveChecks(); } },
-                openTaxi(event) { if (event.taxi) { this.currentTaxi = event.taxi; this.showTaxiModal = true; } },
-                openPhrase(p, catName) { const catMap = { 'food': '餐廳', 'shop': '購物', 'help': '緊急' }; this.currentPhrase = { ...p, cat: catMap[catName] }; this.modalOpen = true; },
-                startClock() { setInterval(() => this.checkActiveEvent(), 60000); this.checkActiveEvent(); },
-                enableSimulateMode() { if (confirm('開啟時光機模擬 3/14 17:00？')) { this.simulatedTime = new Date('2026-03-14T17:00:00'); this.checkActiveEvent(); this.autoNavigate(); alert('已切換至 3/14 17:00！'); } },
-                getNow() { return this.simulatedTime || new Date(); },
-                checkActiveEvent() {
-                    const now = this.getNow();
-                    const dateMap = { '14': 0, '15': 1, '16': 2, '17': 3, '18': 4 };
-                    const day = now.getDate();
-                    if (now.getMonth() + 1 !== 3 || !dateMap.hasOwnProperty(day)) { this.activeEventId = null; return; }
-                    const dayIndex = dateMap[day];
-                    const todayEvents = this.days[dayIndex].hasOptions ? this.days[dayIndex].options[this.days[dayIndex].selectedOption] : this.days[dayIndex].events;
-                    let foundEvent = null;
-                    const nowMins = now.getHours() * 60 + now.getMinutes();
-                    todayEvents.forEach((ev, idx) => {
-                        const [h, m] = ev.time.split(':').map(Number);
-                        if (nowMins >= h * 60 + m) foundEvent = `event-${dayIndex}-${idx}`;
+                        } 
                     });
-                    this.activeEventId = foundEvent;
-                },
-                isCurrentEvent(dayIndex, event) { return false; },
-                autoNavigate() { if (this.activeEventId) { const [_, dayIdx] = this.activeEventId.split('-'); this.swiperInstance.slideTo(parseInt(dayIdx) + 3); setTimeout(() => { const el = document.getElementById(this.activeEventId); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 500); } },
-                getIconColor(t) { const c = { 'transport': 'bg-blue-500', 'food': 'bg-orange-400', 'activity': 'bg-slate-700', 'sakura': 'bg-pink-400', 'hotel': 'bg-indigo-500', 'flight': 'bg-sky-500', 'luggage': 'bg-teal-500' }; return c[t] || 'bg-slate-400'; },
-                getIconClass(t) { const i = { 'transport': 'ph-bold ph-train', 'food': 'ph-bold ph-bowl-food', 'activity': 'ph-bold ph-camera', 'sakura': 'ph-fill ph-flower-lotus', 'hotel': 'ph-bold ph-bed', 'flight': 'ph-bold ph-airplane-tilt', 'luggage': 'ph-bold ph-suitcase' }; return i[t] || 'ph-circle'; },
-                getTagColor(t) { if(t==='需預約')return 'bg-red-100 text-red-600'; if(t==='必吃' || t==='需搶位' || t==='周遊券OK')return 'bg-orange-100 text-orange-600'; if(t==='賞櫻點')return 'bg-pink-100 text-pink-600'; return 'bg-blue-100 text-blue-600'; }
-            }
+                    setTimeout(() => this.autoNavigate(), 1000);
+                }, 500); 
+                
+                if (!this.prepData || !this.prepData.luggage) { this.resetData(); }
+            },
+
+            // v37: 核心修正 - Tab 自動置中
+            centerTab(index) {
+                const container = document.getElementById('tabContainer');
+                const tabBtn = document.getElementById(`tab-${index}`);
+                if (container && tabBtn) {
+                    const scrollLeft = tabBtn.offsetLeft - (container.clientWidth / 2) + (tabBtn.clientWidth / 2);
+                    container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+                }
+            },
+
+            // v37: 語音修正 (確保瀏覽器 API 可用)
+            speak(text) { 
+                if ('speechSynthesis' in window) { 
+                    window.speechSynthesis.cancel(); // 停止上一句
+                    const u = new SpeechSynthesisUtterance(text); 
+                    u.lang = 'ja-JP'; 
+                    u.rate = 0.9; 
+                    window.speechSynthesis.speak(u); 
+                } else { 
+                    alert('你的瀏覽器不支援發音'); 
+                } 
+            },
+
+            openChat() { this.showChatModal = true; this.$nextTick(() => this.scrollToBottom()); },
+            
+            async checkModels() {
+                const k = this.apiKeyTemp.trim();
+                if(!k) return alert('Key?');
+                try {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${k}`);
+                    const data = await res.json();
+                    if(!res.ok) throw new Error(data.error?.message);
+                    this.availableModels = data.models.filter(m => m.supportedGenerationMethods.includes('generateContent')).map(m => m.name.replace('models/', ''));
+                    alert(`成功: ${this.availableModels.length} 個`);
+                } catch (e) { alert(`失敗: ${e.message}`); }
+            },
+
+            saveSettings() {
+                localStorage.setItem('gemini_api_key', this.apiKey = this.apiKeyTemp.trim());
+                localStorage.setItem('gemini_model_id', this.modelId = this.modelIdTemp.trim());
+                this.showKeySettings = false;
+                this.toastText = '設定已儲存'; this.triggerToast();
+            },
+
+            async sendChat() { 
+                if(!this.chatInput.trim()) return;
+                const msg = this.chatInput; this.chatInput = '';
+                this.pushMsg('user', msg);
+                this.performChat(msg, true);
+            },
+
+            async performChat(userMsg, withContext) {
+                if (!this.apiKey) { alert('No Key'); this.showKeySettings = true; return; }
+                this.isAiThinking = true;
+                const cleanModelId = this.modelId.replace('models/', '');
+                const payload = { contents: [{ role: "user", parts: [{ text: userMsg }] }] };
+
+                if (withContext) {
+                    const simpleContext = this.days.map(d => {
+                        let evs = d.hasOptions ? d.options[d.selectedOption] : d.events;
+                        return `${d.shortTitle}: ` + evs.map(e => e.name).join(', ');
+                    }).join('\n');
+                    payload.contents[0].parts[0].text = `[指令] 你是東京導遊。這是行程表：\n${simpleContext}\n\n[規則] 除非問起，否則不要複誦行程。請簡短回答。\n\n問：${userMsg}`;
+                }
+
+                try {
+                    const controller = new AbortController();
+                    setTimeout(() => controller.abort(), 60000);
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cleanModelId}:generateContent?key=${this.apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        signal: controller.signal
+                    });
+                    
+                    if (!res.ok) throw new Error((await res.json()).error?.message);
+                    const data = await res.json();
+                    this.pushMsg('ai', data.candidates[0].content.parts[0].text);
+                } catch (e) {
+                    let msg = e.message;
+                    if(e.name === 'AbortError') msg = '連線逾時 (請檢查網路)';
+                    this.pushMsg('ai', `Error: ${msg}`);
+                } finally {
+                    this.isAiThinking = false;
+                }
+            },
+
+            pushMsg(role, content) { 
+                this.chatHistory.push({ role, content, time: new Date().toLocaleTimeString() }); 
+                localStorage.setItem('chat_history', JSON.stringify(this.chatHistory));
+                this.$nextTick(() => this.scrollToBottom());
+            },
+            scrollToBottom() { const c = document.getElementById('chatContainer'); if(c) c.scrollTop = c.scrollHeight; },
+            renderMarkdown(text) { return marked.parse(text); },
+            triggerToast() { this.toast(this.toastText); },
+            toast(t) { this.toastText = t; this.showToast = true; setTimeout(() => this.showToast = false, 2000); },
+            async initWeather() { await this.fetchW(35.6895, 139.6917, 'tokyo'); await this.fetchW(35.2380, 139.0460, 'hakone'); },
+            async fetchW(lat, lon, key) { try { const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=Asia%2FTokyo`); const d = await r.json(); const c = d.current_weather.weathercode; const t = Math.round(d.current_weather.temperature); let i = 'ph-sun'; if(c>=1) i='ph-cloud'; this.weatherData[key] = { temp: `${t}°C`, icon: i, desc: '' }; } catch { this.weatherData[key] = { temp: '-', icon: 'ph-warning', desc: '離線' }; } },
+            getCurrentWeather() { if (this.activeIndex === 2 || this.activeIndex === 3) return { ...this.weatherData.hakone, loc: '箱根' }; return { ...this.weatherData.tokyo, loc: '東京' }; },
+            slideTo(i) { this.swiperInstance.slideTo(i); },
+            updateSwiperHeight() { setTimeout(() => { this.swiperInstance.updateAutoHeight(300); this.swiperInstance.update(); }, 100); },
+            toggleCheck(item) { item.checked = !item.checked; this.saveChecks(); },
+            saveChecks() { try { localStorage.setItem('tokyo_2026_fixed_v8', JSON.stringify(this.prepData)); } catch(e) {} },
+            addMoney() { if(!this.newMoney.title || !this.newMoney.amount) return; this.moneyList.unshift({ title: this.newMoney.title, amount: this.newMoney.amount, cat: this.newMoney.cat, date: new Date().toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'}) }); this.saveMoney(); this.showMoneyModal = false; },
+            saveMoney() { try { localStorage.setItem('tokyo_2026_money_v1', JSON.stringify(this.moneyList)); this.toastText = '已儲存'; this.triggerToast(); } catch(e) {} },
+            deleteMoney(idx) { if(confirm('刪除？')) { this.moneyList.splice(idx, 1); this.saveMoney(); } },
+            resetMoney() { if(confirm('清空？')) { this.moneyList = []; this.saveMoney(); } },
+            getMoneyIcon(cat) { const map = { 'food': { icon: 'ph-bowl-food', bg: 'bg-orange-100 text-orange-600' }, 'shop': { icon: 'ph-shopping-bag', bg: 'bg-pink-100 text-pink-600' }, 'traffic': { icon: 'ph-train', bg: 'bg-blue-100 text-blue-600' }, 'other': { icon: 'ph-dots-three-circle', bg: 'bg-gray-100 text-gray-600' } }; return map[cat] || map['other']; },
+            exportShopping() { let text = "🛍️ 東京戰利品清單\n"; for (const [cat, items] of Object.entries(this.prepData.shopping)) { if (items.length > 0) { text += `\n【${cat}】\n`; items.forEach(item => { text += `${item.checked ? "✅" : "⬜"} ${item.name} ${item.desc ? '('+item.desc+')' : ''}\n`; }); } } this.copyToClipboard(text); },
+            exportMoney() { let text = "💸 東京消費紀錄\n"; text += `📅 日期: ${new Date().toLocaleDateString()}\n`; text += `💰 總支出: ¥${this.totalSpent.toLocaleString()}\n------------------\n`; this.moneyList.forEach(item => { text += `${item.date} | ${item.title}: ¥${Number(item.amount).toLocaleString()}\n`; }); this.copyToClipboard(text); },
+            copyToClipboard(text) { if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(text).then(() => { this.toastText = '已複製'; this.triggerToast(); }); } else { let ta = document.createElement("textarea"); ta.value = text; ta.style.position="fixed"; ta.style.left="-9999px"; document.body.appendChild(ta); ta.focus(); ta.select(); try { document.execCommand('copy'); this.toastText = '已複製'; this.triggerToast(); } catch (err) {} document.body.removeChild(ta); } },
+            resetData() { if(confirm('重置清單？')) { this.prepData = JSON.parse(JSON.stringify(defaultPrepData)); this.saveChecks(); } },
+            openAddModal() { this.newItem = { cat: '藥妝與保健', name: '', desc: '' }; this.showAddModal = true; },
+            addItem() { if (!this.newItem.name) return; this.prepData.shopping[this.newItem.cat].push({ name: this.newItem.name, desc: this.newItem.desc || '新增項目', checked: false }); this.saveChecks(); this.showAddModal = false; },
+            deleteItem(cat, idx) { if(confirm('刪除？')) { this.prepData.shopping[cat].splice(idx, 1); this.saveChecks(); } },
+            openTaxi(event) { if (event.taxi) { this.currentTaxi = event.taxi; this.showTaxiModal = true; } },
+            openPhrase(p, catName) { const catMap = { 'food': '餐廳', 'shop': '購物', 'help': '緊急' }; this.currentPhrase = { ...p, cat: catMap[catName] }; this.modalOpen = true; },
+            startClock() { setInterval(() => this.checkActiveEvent(), 60000); this.checkActiveEvent(); },
+            enableSimulateMode() { if (confirm('開啟時光機模擬 3/14 17:00？')) { this.simulatedTime = new Date('2026-03-14T17:00:00'); this.checkActiveEvent(); this.autoNavigate(); alert('已切換至 3/14 17:00！'); } },
+            getNow() { return this.simulatedTime || new Date(); },
+            checkActiveEvent() {
+                const now = this.getNow();
+                const dateMap = { '14': 0, '15': 1, '16': 2, '17': 3, '18': 4 };
+                const day = now.getDate();
+                if (now.getMonth() + 1 !== 3 || !dateMap.hasOwnProperty(day)) { this.activeEventId = null; return; }
+                const dayIndex = dateMap[day];
+                const todayEvents = this.days[dayIndex].hasOptions ? this.days[dayIndex].options[this.days[dayIndex].selectedOption] : this.days[dayIndex].events;
+                let foundEvent = null;
+                const nowMins = now.getHours() * 60 + now.getMinutes();
+                todayEvents.forEach((ev, idx) => {
+                    const [h, m] = ev.time.split(':').map(Number);
+                    if (nowMins >= h * 60 + m) foundEvent = `event-${dayIndex}-${idx}`;
+                });
+                this.activeEventId = foundEvent;
+            },
+            isCurrentEvent(dayIndex, event) { return false; },
+            autoNavigate() { if (this.activeEventId) { const [_, dayIdx] = this.activeEventId.split('-'); this.swiperInstance.slideTo(parseInt(dayIdx) + 3); setTimeout(() => { const el = document.getElementById(this.activeEventId); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 500); } },
+            getIconColor(t) { const c = { 'transport': 'bg-blue-500', 'food': 'bg-orange-400', 'activity': 'bg-slate-700', 'sakura': 'bg-pink-400', 'hotel': 'bg-indigo-500', 'flight': 'bg-sky-500', 'luggage': 'bg-teal-500' }; return c[t] || 'bg-slate-400'; },
+            getIconClass(t) { const i = { 'transport': 'ph-bold ph-train', 'food': 'ph-bold ph-bowl-food', 'activity': 'ph-bold ph-camera', 'sakura': 'ph-fill ph-flower-lotus', 'hotel': 'ph-bold ph-bed', 'flight': 'ph-bold ph-airplane-tilt', 'luggage': 'ph-bold ph-suitcase' }; return i[t] || 'ph-circle'; },
+            getTagColor(t) { if(t==='需預約')return 'bg-red-100 text-red-600'; if(t==='必吃' || t==='需搶位' || t==='周遊券OK')return 'bg-orange-100 text-orange-600'; if(t==='賞櫻點')return 'bg-pink-100 text-pink-600'; return 'bg-blue-100 text-blue-600'; }
         }
+    }
     </script>
 </body>
 </html>
