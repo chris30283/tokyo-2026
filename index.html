@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     <link rel="shortcut icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
 
-    <title>2026 東京賞櫻 (v5 記帳版)</title>
+    <title>2026 東京賞櫻 (v6 匯出分享版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -63,7 +63,7 @@
 <body class="text-slate-700" x-data="tripData()" x-init="initApp()">
 
     <div x-show="showToast" class="fixed top-4 right-4 z-[1000] bg-black/70 text-white px-4 py-2 rounded-full text-xs font-bold backdrop-blur-md flex items-center gap-2 toast-msg" x-cloak>
-        <i class="ph-bold ph-check-circle text-green-400"></i> 已儲存
+        <i class="ph-bold ph-check-circle text-green-400"></i> <span x-text="toastText"></span>
     </div>
 
     <div x-show="modalOpen || showAddModal || showMoneyModal" x-cloak class="fixed inset-0 z-[999] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm" x-transition.opacity>
@@ -174,7 +174,10 @@
                     
                     <div class="flex justify-between items-end mb-3 ml-1">
                         <h3 class="text-sm font-bold text-orange-400 uppercase tracking-wider">🇯🇵 必買戰利品清單</h3>
-                        <button @click="openAddModal()" class="text-xs font-bold text-white bg-orange-400 px-3 py-1 rounded-full shadow active:scale-95 transition-transform flex items-center gap-1"><i class="ph-bold ph-plus"></i> 新增</button>
+                        <div class="flex gap-2">
+                            <button @click="exportShopping()" class="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1 rounded-full active:scale-95 transition-transform flex items-center gap-1"><i class="ph-bold ph-export"></i> 分享</button>
+                            <button @click="openAddModal()" class="text-xs font-bold text-white bg-orange-400 px-3 py-1 rounded-full shadow active:scale-95 transition-transform flex items-center gap-1"><i class="ph-bold ph-plus"></i> 新增</button>
+                        </div>
                     </div>
                     <div class="ios-card overflow-hidden mb-8">
                         <template x-for="(items, category) in prepData.shopping">
@@ -237,7 +240,10 @@
 
                     <div class="flex justify-between items-end mb-3 ml-1">
                         <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">消費紀錄</h3>
-                        <button @click="resetMoney()" class="text-[10px] text-slate-400 underline">重置</button>
+                        <div class="flex gap-2">
+                            <button @click="exportMoney()" class="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1 rounded-full active:scale-95 transition-transform flex items-center gap-1"><i class="ph-bold ph-export"></i> 分享</button>
+                            <button @click="resetMoney()" class="text-[10px] text-slate-400 underline">重置</button>
+                        </div>
                     </div>
 
                     <div class="space-y-3" x-show="moneyList.length > 0">
@@ -388,6 +394,7 @@
                 weatherData: { tokyo: { temp: '--', icon: 'ph-dots-three', desc: '載入中' }, hakone: { temp: '--', icon: 'ph-dots-three', desc: '載入中' } },
                 statusMsg: status,
                 prepData: initialData,
+                toastText: '已儲存', // 提示文字變數
 
                 phrases: {
                     food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ],
@@ -422,12 +429,14 @@
                     try {
                         localStorage.setItem('tokyo_2026_fixed_v4', JSON.stringify(this.prepData));
                         this.statusMsg = '狀態: 已儲存 (' + new Date().toLocaleTimeString() + ')';
+                        this.toastText = '已儲存';
                         this.triggerToast();
                     } catch(e) { console.error('Save failed', e); }
                 },
                 saveMoney() {
                     try {
                         localStorage.setItem('tokyo_2026_money_v1', JSON.stringify(this.moneyList));
+                        this.toastText = '已儲存';
                         this.triggerToast();
                     } catch(e) { console.error('Money Save failed', e); }
                 },
@@ -466,6 +475,64 @@
                         'other': { icon: 'ph-dots-three-circle', bg: 'bg-gray-100 text-gray-600' }
                     };
                     return map[cat] || map['other'];
+                },
+
+                // 新增：匯出購物清單 (Shopping Export)
+                exportShopping() {
+                    let text = "🛍️ 東京戰利品清單\n";
+                    for (const [cat, items] of Object.entries(this.prepData.shopping)) {
+                        if (items.length > 0) {
+                            text += `\n【${cat}】\n`;
+                            items.forEach(item => {
+                                const status = item.checked ? "✅" : "⬜";
+                                text += `${status} ${item.name} ${item.desc ? '('+item.desc+')' : ''}\n`;
+                            });
+                        }
+                    }
+                    this.copyToClipboard(text);
+                },
+
+                // 新增：匯出記帳紀錄 (Accounting Export)
+                exportMoney() {
+                    let text = "💸 東京消費紀錄\n";
+                    text += `📅 日期: ${new Date().toLocaleDateString()}\n`;
+                    text += `💰 總支出: ¥${this.totalSpent.toLocaleString()}\n`;
+                    text += "------------------\n";
+                    this.moneyList.forEach(item => {
+                        text += `${item.date} | ${item.title}: ¥${Number(item.amount).toLocaleString()}\n`;
+                    });
+                    this.copyToClipboard(text);
+                },
+
+                // 新增：複製到剪貼簿功能
+                copyToClipboard(text) {
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(text).then(() => {
+                            this.toastText = '已複製到剪貼簿';
+                            this.triggerToast();
+                        }).catch(err => {
+                            console.error('Copy failed', err);
+                            alert("複製失敗，請手動截圖");
+                        });
+                    } else {
+                        // Fallback for older devices/insecure contexts
+                        let textArea = document.createElement("textarea");
+                        textArea.value = text;
+                        textArea.style.position = "fixed";
+                        textArea.style.left = "-9999px";
+                        document.body.appendChild(textArea);
+                        textArea.focus();
+                        textArea.select();
+                        try {
+                            document.execCommand('copy');
+                            this.toastText = '已複製到剪貼簿';
+                            this.triggerToast();
+                        } catch (err) {
+                            console.error('Fallback copy failed', err);
+                            alert("複製失敗，請手動截圖");
+                        }
+                        document.body.removeChild(textArea);
+                    }
                 },
 
                 resetData() {
