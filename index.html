@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     
-    <title>2026 東京賞櫻 (v34 完美回歸版)</title>
+    <title>2026 東京賞櫻 (v35 補完版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -127,8 +127,10 @@
         <div x-show="activeIndex === 0" x-transition.opacity.duration.300ms>
             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 ml-1">必備預約</h3>
             <div class="grid gap-3 mb-8"><template x-for="ticket in prepData.tickets"><div class="ios-card p-4 flex justify-between items-center"><div><div class="font-bold text-slate-800" x-text="ticket.name"></div><div class="text-xs text-slate-400 mt-0.5" x-text="ticket.desc"></div></div><a :href="ticket.link" target="_blank" class="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-xs font-bold active:bg-slate-200">預約</a></div></template></div>
+            
             <div class="flex justify-between items-center mb-3 ml-1"><h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">出發前檢查</h3><button @click="resetData()" class="text-[10px] text-slate-400 underline">重置清單</button></div>
             <div class="ios-card overflow-hidden mb-8"><template x-for="(items, category) in prepData.luggage"><div class="border-b border-gray-100 last:border-0"><div class="bg-gray-50 px-4 py-2 text-[10px] font-bold text-slate-400 uppercase" x-text="category"></div><template x-for="item in items"><div @click="toggleCheck(item)" class="flex items-center gap-3 px-4 py-3 active:bg-gray-50 cursor-pointer"><div class="w-6 h-6 rounded-full border-2 flex items-center justify-center check-circle" :class="item.checked ? 'checked-bg border-transparent' : 'border-gray-300'"><i x-show="item.checked" class="ph-bold ph-check text-white text-sm"></i></div><span class="text-sm font-medium text-slate-700" :class="{'line-through opacity-40': item.checked}" x-text="item.name"></span></div></template></div></template></div>
+            
             <div class="flex justify-between items-end mb-3 ml-1"><h3 class="text-sm font-bold text-orange-400 uppercase tracking-wider">🇯🇵 必買戰利品清單</h3><div class="flex gap-2"><button @click="exportShopping()" class="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1 rounded-full active:scale-95 transition-transform flex items-center gap-1"><i class="ph-bold ph-export"></i> 分享</button><button @click="openAddModal()" class="text-xs font-bold text-white bg-orange-400 px-3 py-1 rounded-full shadow active:scale-95 transition-transform flex items-center gap-1"><i class="ph-bold ph-plus"></i> 新增</button></div></div>
             <div class="ios-card overflow-hidden mb-8"><template x-for="(items, category) in prepData.shopping"><div class="border-b border-gray-100 last:border-0" x-show="items.length > 0"><div class="bg-gray-50 px-4 py-2 text-[10px] font-bold text-slate-400 uppercase" x-text="category"></div><template x-for="(item, idx) in items"><div @click="toggleCheck(item)" class="flex items-center justify-between px-4 py-3 active:bg-gray-50 cursor-pointer group"><div class="flex items-center gap-3 flex-1"><div class="w-6 h-6 rounded-full border-2 flex items-center justify-center check-circle transition-colors flex-shrink-0" :class="item.checked ? 'bg-orange-400 border-orange-400' : 'border-gray-300'"><i x-show="item.checked" class="ph-bold ph-check text-white text-sm"></i></div><div><div class="text-sm font-bold text-slate-700" :class="{'line-through opacity-40': item.checked}" x-text="item.name"></div><div class="text-[10px] text-slate-400" x-text="item.desc"></div></div></div><button @click.stop="deleteItem(category, idx)" class="p-2 text-slate-300 hover:text-red-500 transition-colors"><i class="ph-bold ph-trash"></i></button></div></template></div></template></div>
         </div>
@@ -137,7 +139,26 @@
             <div class="ios-card p-4 mb-6 bg-slate-800 text-white"><div class="flex items-center gap-2 mb-4"><i class="ph-fill ph-ticket text-yellow-400 text-xl"></i><h3 class="font-bold">票券收納夾</h3></div><div class="space-y-3"><template x-for="(val, key) in prepData.ticketsWallet"><div class="bg-slate-700/50 rounded-xl p-3 flex justify-between items-center"><div class="flex-1 mr-2"><div class="text-[10px] text-slate-400 uppercase font-bold" x-text="key"></div><input type="text" x-model="prepData.ticketsWallet[key]" @change="saveChecks()" placeholder="輸入代號或網址..." class="bg-transparent w-full text-sm font-mono font-bold outline-none text-white placeholder-slate-600"></div><button @click="copyToClipboard(prepData.ticketsWallet[key])" class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center active:scale-95"><i class="ph-bold ph-copy text-slate-300"></i></button></div></template></div></div>
             <div class="ios-card p-5 mb-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg"><div class="flex justify-between items-center mb-6"><div class="text-center"><div class="text-2xl font-bold">TPE</div><div class="text-xs opacity-80">台北</div></div><div class="flex-1 text-center px-4"><i class="ph-fill ph-airplane-tilt text-2xl mb-1"></i><div class="h-0.5 bg-white/30 rounded-full w-full"></div><div class="text-[10px] mt-1 opacity-80">JL0802 / JL0809</div></div><div class="text-center"><div class="text-2xl font-bold">NRT</div><div class="text-xs opacity-80">成田</div></div></div><a href="https://digital.jal.co.jp/ssci/identification?lang=zh-Hant" target="_blank" class="block w-full bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-3 text-center mb-4 hover:bg-white/30 transition-all shadow-md"><div class="font-bold text-lg flex items-center justify-center gap-2"><i class="ph-bold ph-globe-hemisphere-east"></i> JAL 線上報到</div><div class="text-[10px] opacity-80 mt-1">出發前 24 小時開放 • 點擊進入</div></a><div class="space-y-2"><div class="flex justify-between items-center bg-white/10 rounded-lg p-2 px-3 backdrop-blur-sm border border-white/10"><div class="text-xs font-bold opacity-90">去程 3/14 (六)</div><div class="font-mono font-bold text-sm">JL 0802</div><div class="text-xs opacity-90">10:55 - 14:55</div></div><div class="flex justify-between items-center bg-white/10 rounded-lg p-2 px-3 backdrop-blur-sm border border-white/10"><div class="text-xs font-bold opacity-90">回程 3/18 (三)</div><div class="font-mono font-bold text-sm">JL 0809</div><div class="text-xs opacity-90">18:05 - 21:10</div></div></div></div>
             <div class="grid grid-cols-2 gap-3 mb-6"><a href="https://world.jorudan.co.jp/mln/zh-tw/" target="_blank" class="ios-card p-3 flex flex-col items-center justify-center text-center active:scale-95 transition-transform"><i class="ph-duotone ph-train text-2xl text-green-500 mb-1"></i><span class="text-xs font-bold text-slate-700">乘換案內</span></a><a href="https://www.coinlocker-navi.com/" target="_blank" class="ios-card p-3 flex flex-col items-center justify-center text-center active:scale-95 transition-transform"><i class="ph-duotone ph-locker text-2xl text-blue-500 mb-1"></i><span class="text-xs font-bold text-slate-700">置物櫃</span></a></div>
-            <div class="ios-card p-4"><div class="flex items-center gap-2 mb-4"><div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-500"><i class="ph-fill ph-translate"></i></div><h3 class="font-bold text-slate-800">手指日文</h3></div><div class="flex bg-slate-100 rounded-lg p-1 mb-4"><button @click="phraseTab = 'food'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'food' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">餐廳</button><button @click="phraseTab = 'shop'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'shop' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">購物</button><button @click="phraseTab = 'help'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'help' ? 'bg-white shadow text-red-500' : 'text-slate-400'">緊急</button></div><div class="grid grid-cols-2 gap-2"><template x-for="p in phrases[phraseTab]"><div @click="openPhrase(p, phraseTab)" class="bg-gray-50 border border-gray-100 rounded-xl p-3 active:bg-gray-100 active:scale-95 transition-transform text-center"><div class="text-sm font-bold text-slate-800 truncate" x-text="p.jp"></div><div class="text-[10px] text-slate-500 mt-1 flex justify-center items-center gap-1"><span x-text="p.cn"></span> <i class="ph-bold ph-speaker-high text-pink-400"></i></div></div></template></div></div>
+            
+            <div class="ios-card p-4">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-500"><i class="ph-fill ph-translate"></i></div>
+                    <h3 class="font-bold text-slate-800">手指日文</h3>
+                </div>
+                <div class="flex bg-slate-100 rounded-lg p-1 mb-4">
+                    <button @click="phraseTab = 'food'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'food' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">餐廳</button>
+                    <button @click="phraseTab = 'shop'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'shop' ? 'bg-white shadow text-slate-800' : 'text-slate-400'">購物</button>
+                    <button @click="phraseTab = 'help'" class="flex-1 py-1.5 rounded-md text-xs font-bold" :class="phraseTab === 'help' ? 'bg-white shadow text-red-500' : 'text-slate-400'">緊急</button>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <template x-for="p in phrases[phraseTab]">
+                        <div @click="openPhrase(p, phraseTab)" class="bg-gray-50 border border-gray-100 rounded-xl p-3 active:bg-gray-100 active:scale-95 transition-transform text-center">
+                            <div class="text-sm font-bold text-slate-800 truncate" x-text="p.jp"></div>
+                            <div class="text-[10px] text-slate-500 mt-1 flex justify-center items-center gap-1"><span x-text="p.cn"></span> <i class="ph-bold ph-speaker-high text-pink-400"></i></div>
+                        </div>
+                    </template>
+                </div>
+            </div>
         </div>
 
         <div x-show="activeIndex === 2" x-transition.opacity.duration.300ms>
@@ -185,51 +206,10 @@
         </template>
     </main>
 
-    <div x-show="showAddModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" style="display: none;" @click.self="showAddModal = false">
-        <div class="bg-white w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl relative animate-[fadeIn_0.2s_ease-out]">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-slate-800">新增購物項目</h3>
-                <button @click="showAddModal = false" class="bg-gray-100 p-2 rounded-full active:bg-gray-200"><i class="ph-bold ph-x"></i></button>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">類別</label>
-                    <select x-model="newItem.cat" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-orange-400">
-                        <template x-for="(items, category) in prepData.shopping" :key="category">
-                            <option :value="category" x-text="category"></option>
-                        </template>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">商品名稱</label>
-                    <input x-model="newItem.name" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-orange-400" placeholder="例如: 抹茶粉">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">備註 (選填)</label>
-                    <input x-model="newItem.desc" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm text-slate-500 outline-none focus:border-orange-400" placeholder="數量 / 規格">
-                </div>
-                <button @click="addItem()" class="w-full bg-orange-400 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-orange-200 active:scale-95 transition-transform mt-2">確認新增</button>
-            </div>
-        </div>
-    </div>
-
-    <div x-show="showMoneyModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" style="display: none;" @click.self="showMoneyModal = false">
-        <div class="bg-white w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl relative animate-[fadeIn_0.2s_ease-out]">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-slate-800">記一筆 💸</h3>
-                <button @click="showMoneyModal = false" class="bg-gray-100 p-2 rounded-full active:bg-gray-200"><i class="ph-bold ph-x"></i></button>
-            </div>
-            <div class="space-y-3">
-                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">項目名稱</label><input x-model="newMoney.title" type="text" placeholder="午餐 / 伴手禮" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base font-bold text-slate-700 outline-none focus:border-blue-500"></div>
-                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">金額 (日幣)</label><input x-model="newMoney.amount" type="number" inputmode="numeric" placeholder="¥" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xl font-mono font-bold text-slate-700 outline-none focus:border-blue-500"></div>
-                <div><label class="text-xs font-bold text-slate-400 uppercase ml-1">分類</label><div class="grid grid-cols-4 gap-2"><button @click="newMoney.cat = 'food'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'food' ? 'bg-orange-100 border-orange-400 text-orange-600' : 'bg-white border-slate-200 text-slate-400'">飲食</button><button @click="newMoney.cat = 'shop'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'shop' ? 'bg-pink-100 border-pink-400 text-pink-600' : 'bg-white border-slate-200 text-slate-400'">購物</button><button @click="newMoney.cat = 'traffic'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'traffic' ? 'bg-blue-100 border-blue-400 text-blue-600' : 'bg-white border-slate-200 text-slate-400'">交通</button><button @click="newMoney.cat = 'other'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'other' ? 'bg-gray-100 border-gray-400 text-gray-600' : 'bg-white border-slate-200 text-slate-400'">其他</button></div></div>
-                <button @click="addMoney()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl mt-2 active:scale-95 transition-transform shadow-md">儲存紀錄</button>
-            </div>
-        </div>
-    </div>
-
     <div x-show="modalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="modalOpen = false"><div class="bg-white w-full max-w-sm rounded-3xl p-8 text-center shadow-2xl relative"><button @click="modalOpen = false" class="absolute top-4 right-4 bg-gray-100 p-2 rounded-full"><i class="ph-bold ph-x text-lg"></i></button><span class="inline-block bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold mb-4" x-text="currentPhrase.cat"></span><h2 class="text-3xl font-bold text-slate-800 mb-2 leading-tight" x-text="currentPhrase.jp"></h2><p class="text-slate-400 text-sm font-mono mb-6" x-text="currentPhrase.romaji"></p><div class="border-t pt-4 mb-4"><p class="text-xl font-bold text-slate-600" x-text="currentPhrase.cn"></p></div><button @click="speak(currentPhrase.jp)" class="w-full bg-slate-100 text-slate-600 font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:bg-slate-200 transition-colors"><i class="ph-fill ph-speaker-high text-xl"></i> 唸給對方聽</button></div></div>
     <div x-show="showTaxiModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="showTaxiModal = false"><div class="bg-white w-full h-auto max-w-md rounded-3xl p-8 text-center shadow-2xl relative"><button @click="showTaxiModal = false" class="absolute top-6 right-6 bg-gray-100 p-3 rounded-full"><i class="ph-bold ph-x text-xl"></i></button><div class="mb-6"><div class="inline-block bg-yellow-400 text-black px-4 py-1 rounded-full text-sm font-bold mb-2">TAXI CARD</div><p class="text-slate-400 text-xs">請將此畫面出示給司機看</p></div><div class="space-y-6"><div class="text-left bg-slate-50 p-4 rounded-xl border border-slate-100"><p class="text-xs text-slate-400 mb-1">給司機的話：</p><p class="text-lg font-bold text-slate-800">運転手さん、ここまでお願いします。</p></div><div><p class="text-xs text-slate-400 mb-2">目的地</p><h2 class="text-3xl font-black text-slate-900 leading-tight mb-4" x-text="currentTaxi.jpName"></h2><div class="bg-slate-100 p-4 rounded-xl"><p class="text-lg font-bold text-slate-700 font-mono" x-text="currentTaxi.address"></p></div></div></div><button @click="speak(currentTaxi.address)" class="mt-8 w-full bg-yellow-400 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-md"><i class="ph-fill ph-speaker-high text-xl"></i> 唸出地址</button></div></div>
+    <div x-show="showAddModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" style="display: none;" @click.self="showAddModal = false"><div class="bg-white w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl relative animate-[fadeIn_0.2s_ease-out]"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-slate-800">新增購物項目</h3><button @click="showAddModal = false" class="bg-gray-100 p-2 rounded-full active:bg-gray-200"><i class="ph-bold ph-x"></i></button></div><div class="space-y-4"><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">類別</label><select x-model="newItem.cat" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-orange-400"><template x-for="(items, category) in prepData.shopping" :key="category"><option :value="category" x-text="category"></option></template></select></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">商品名稱</label><input x-model="newItem.name" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-orange-400" placeholder="例如: 抹茶粉"></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">備註 (選填)</label><input x-model="newItem.desc" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm text-slate-500 outline-none focus:border-orange-400" placeholder="數量 / 規格"></div><button @click="addItem()" class="w-full bg-orange-400 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-orange-200 active:scale-95 transition-transform mt-2">確認新增</button></div></div></div>
+    <div x-show="showMoneyModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" style="display: none;" @click.self="showMoneyModal = false"><div class="bg-white w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl relative animate-[fadeIn_0.2s_ease-out]"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-slate-800">記一筆 💸</h3><button @click="showMoneyModal = false" class="bg-gray-100 p-2 rounded-full active:bg-gray-200"><i class="ph-bold ph-x"></i></button></div><div class="space-y-3"><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">項目名稱</label><input x-model="newMoney.title" type="text" placeholder="午餐 / 伴手禮" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-base font-bold text-slate-700 outline-none focus:border-blue-500"></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">金額 (日幣)</label><input x-model="newMoney.amount" type="number" inputmode="numeric" placeholder="¥" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-xl font-mono font-bold text-slate-700 outline-none focus:border-blue-500"></div><div><label class="text-xs font-bold text-slate-400 uppercase ml-1">分類</label><div class="grid grid-cols-4 gap-2"><button @click="newMoney.cat = 'food'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'food' ? 'bg-orange-100 border-orange-400 text-orange-600' : 'bg-white border-slate-200 text-slate-400'">飲食</button><button @click="newMoney.cat = 'shop'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'shop' ? 'bg-pink-100 border-pink-400 text-pink-600' : 'bg-white border-slate-200 text-slate-400'">購物</button><button @click="newMoney.cat = 'traffic'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'traffic' ? 'bg-blue-100 border-blue-400 text-blue-600' : 'bg-white border-slate-200 text-slate-400'">交通</button><button @click="newMoney.cat = 'other'" class="py-2 rounded-lg text-xs font-bold border" :class="newMoney.cat === 'other' ? 'bg-gray-100 border-gray-400 text-gray-600' : 'bg-white border-slate-200 text-slate-400'">其他</button></div></div><button @click="addMoney()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl mt-2 active:scale-95 transition-transform shadow-md">儲存紀錄</button></div></div></div>
 
     <script type="application/json" id="safe-data-days">
     [
@@ -433,7 +413,7 @@
                 modalOpen: false, showAddModal: false, showMoneyModal: false, showTaxiModal: false,
                 currentPhrase: { jp: '', cn: '', romaji: '', cat: '' }, currentTaxi: { jpName: '', address: '' },
                 newItem: { cat: '藥妝與保健', name: '', desc: '' }, newMoney: { title: '', amount: '', cat: 'food' },
-                
+                phraseTab: 'food', // v35: fix missing state
                 phrases: { food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ], shop: [ { jp: 'いくらですか？', cn: '請問多少錢？', romaji: 'Ikura desuka?' }, { jp: 'クレジットカードは使えますか？', cn: '可用信用卡嗎？', romaji: 'Kurejitto kaado wa tsukaemasuka?' }, { jp: '新しい在庫はありますか？', cn: '有新庫存嗎？', romaji: 'Atarashii zaiko wa arimasuka?' }, { jp: '免税できますか？', cn: '可免稅嗎？', romaji: 'Menzei dekimasuka?' }, { jp: '袋を買います', cn: '買袋子', romaji: 'Fukuro o kaimasu' } ], help: [ { jp: '駅はどこですか？', cn: '車站在哪裡？', romaji: 'Eki wa doko desuka?' }, { jp: '写真を撮ってもらえますか？', cn: '可以幫我拍照嗎？', romaji: 'Shashin o totte moraemasuka?' }, { jp: 'すみません', cn: '不好意思 / 借過', romaji: 'Sumimasen' }, { jp: '道に迷いました', cn: '我迷路了', romaji: 'Michi ni mayoimashita' }, { jp: 'トイレはどこ？', cn: '廁所在哪？', romaji: 'Toire wa doko?' } ] },
 
                 get totalSpent() { return this.moneyList.reduce((acc, item) => acc + Number(item.amount), 0); },
@@ -484,7 +464,6 @@
                     const payload = { contents: [{ role: "user", parts: [{ text: userMsg }] }] };
 
                     if (withContext) {
-                        // Simplified context for token efficiency
                         const simpleContext = this.days.map(d => {
                             let evs = d.hasOptions ? d.options[d.selectedOption] : d.events;
                             return `${d.shortTitle}: ` + evs.map(e => e.name).join(', ');
@@ -542,6 +521,7 @@
                 deleteItem(cat, idx) { if(confirm('刪除？')) { this.prepData.shopping[cat].splice(idx, 1); this.saveChecks(); } },
                 openTaxi(event) { if (event.taxi) { this.currentTaxi = event.taxi; this.showTaxiModal = true; } },
                 openPhrase(p, catName) { const catMap = { 'food': '餐廳', 'shop': '購物', 'help': '緊急' }; this.currentPhrase = { ...p, cat: catMap[catName] }; this.modalOpen = true; },
+                speak(text) { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(text); u.lang = 'ja-JP'; u.rate = 0.9; window.speechSynthesis.speak(u); } else { alert('不支援發音'); } },
                 startClock() { setInterval(() => this.checkActiveEvent(), 60000); this.checkActiveEvent(); },
                 enableSimulateMode() { if (confirm('開啟時光機模擬 3/14 17:00？')) { this.simulatedTime = new Date('2026-03-14T17:00:00'); this.checkActiveEvent(); this.autoNavigate(); alert('已切換至 3/14 17:00！'); } },
                 getNow() { return this.simulatedTime || new Date(); },
