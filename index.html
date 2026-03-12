@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     
-    <title>2026 東京賞櫻 (v47)</title>
+    <title>2026 東京賞櫻 (v48)</title>
     
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -365,9 +365,99 @@
                             </template>
                         </div>
                     </div>
-                </div>
 
-                <!-- Slide 2: 記帳 -->
+                    <!-- 即時翻譯卡 -->
+                    <div class="ios-card p-4 mb-4" x-data="translatorWidget()">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-500 flex-shrink-0">
+                                <i class="ph-fill ph-waveform"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-slate-800">即時翻譯</h3>
+                                <p class="text-[10px] text-slate-400">語音輸入 • 自動翻譯 • 朗讀給對方聽</p>
+                            </div>
+                            <div class="flex bg-slate-100 rounded-lg p-0.5">
+                                <button @click="sourceLang = 'zh'; originalText=''; translatedText='';"
+                                        class="px-2.5 py-1 rounded-md text-xs font-bold transition-all"
+                                        :class="sourceLang === 'zh' ? 'bg-white shadow text-violet-600' : 'text-slate-400'">中→日</button>
+                                <button @click="sourceLang = 'ja'; originalText=''; translatedText='';"
+                                        class="px-2.5 py-1 rounded-md text-xs font-bold transition-all"
+                                        :class="sourceLang === 'ja' ? 'bg-white shadow text-violet-600' : 'text-slate-400'">日→中</button>
+                            </div>
+                        </div>
+
+                        <!-- 不支援提示 -->
+                        <div x-show="!speechSupported" class="bg-orange-50 border border-orange-100 rounded-2xl p-4 text-center">
+                            <i class="ph-fill ph-warning-circle text-orange-400 text-2xl mb-2 block"></i>
+                            <div class="text-sm text-orange-700 font-bold">此裝置不支援語音辨識</div>
+                            <div class="text-[10px] text-orange-500 mt-1">建議使用 Chrome 或 Safari</div>
+                        </div>
+
+                        <!-- 主要功能 -->
+                        <div x-show="speechSupported">
+                            <!-- 大錄音按鈕 -->
+                            <div class="flex flex-col items-center py-5">
+                                <button @click="toggleRecording()"
+                                        class="w-24 h-24 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-90 relative"
+                                        :class="isRecording ? 'bg-red-500' : 'bg-gradient-to-br from-violet-500 to-purple-600'">
+                                    <div x-show="isRecording" class="absolute inset-0 rounded-full bg-red-400 animate-ping opacity-25"></div>
+                                    <div x-show="isRecording" class="absolute inset-3 rounded-full bg-red-300 animate-ping opacity-20" style="animation-delay:0.4s"></div>
+                                    <i class="ph-fill text-white text-4xl relative z-10"
+                                       :class="isRecording ? 'ph-stop-circle' : 'ph-microphone'"></i>
+                                </button>
+                                <div class="mt-3 text-sm font-bold"
+                                     :class="isRecording ? 'text-red-500' : 'text-violet-600'"
+                                     x-text="isRecording ? '🔴 錄音中⋯說完自動翻譯' : (sourceLang === 'zh' ? '🎙 按下說中文' : '🎙 按下說日文')"></div>
+                            </div>
+
+                            <!-- 辨識原文 -->
+                            <div x-show="originalText || isRecording" class="bg-slate-50 border border-slate-100 rounded-2xl p-3 mb-3">
+                                <div class="text-[10px] text-slate-400 font-bold mb-1.5 flex items-center gap-1.5">
+                                    <i class="ph-bold ph-ear"></i>
+                                    <span x-text="sourceLang === 'zh' ? '辨識中文' : '辨識日文'"></span>
+                                    <span x-show="isRecording" class="flex items-end gap-0.5 ml-1">
+                                        <span class="w-1 h-2 bg-red-400 rounded-full animate-bounce" style="animation-delay:0s"></span>
+                                        <span class="w-1 h-3 bg-red-400 rounded-full animate-bounce" style="animation-delay:0.15s"></span>
+                                        <span class="w-1 h-2 bg-red-400 rounded-full animate-bounce" style="animation-delay:0.3s"></span>
+                                    </span>
+                                </div>
+                                <div class="text-base text-slate-700 font-medium min-h-6" x-text="originalText || '聆聽中⋯'"></div>
+                            </div>
+
+                            <!-- 翻譯中 spinner -->
+                            <div x-show="isTranslating" class="flex items-center justify-center gap-2 py-4 text-violet-500">
+                                <i class="ph-bold ph-spinner-gap animate-spin text-2xl"></i>
+                                <span class="text-sm font-bold">翻譯中...</span>
+                            </div>
+
+                            <!-- 翻譯結果 -->
+                            <div x-show="translatedText && !isTranslating"
+                                 class="rounded-2xl p-4 border"
+                                 :class="sourceLang === 'zh' ? 'bg-rose-50 border-rose-100' : 'bg-sky-50 border-sky-100'">
+                                <div class="text-[10px] font-bold mb-2 flex items-center gap-1"
+                                     :class="sourceLang === 'zh' ? 'text-rose-400' : 'text-sky-400'">
+                                    <i class="ph-bold ph-translate"></i>
+                                    <span x-text="sourceLang === 'zh' ? '日文' : '中文'"></span>
+                                </div>
+                                <div class="text-2xl font-bold text-slate-800 leading-snug mb-3" x-text="translatedText"></div>
+                                <div class="flex gap-2">
+                                    <button @click="speakTranslation()"
+                                            class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold active:scale-95 transition-all shadow-sm text-white"
+                                            :class="isSpeaking
+                                                ? 'bg-violet-400'
+                                                : (sourceLang === 'zh' ? 'bg-rose-500' : 'bg-sky-500')">
+                                        <i class="ph-fill text-lg" :class="isSpeaking ? 'ph-speaker-high animate-pulse' : 'ph-speaker-high'"></i>
+                                        <span x-text="isSpeaking ? '播放中...' : '🔊 朗讀給對方聽'"></span>
+                                    </button>
+                                    <button @click="copyToClipboard(translatedText)"
+                                            class="w-12 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 active:scale-95 transition-transform flex-shrink-0">
+                                        <i class="ph-bold ph-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="swiper-slide px-4">
                     <div class="ios-card bg-slate-800 text-white p-6 mb-6 shadow-xl relative overflow-hidden">
                         <div class="absolute -right-6 -top-6 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
@@ -835,6 +925,101 @@
     </div>
 
     <script>
+        function translatorWidget() {
+            return {
+                sourceLang: 'zh',
+                isRecording: false,
+                isTranslating: false,
+                originalText: '',
+                translatedText: '',
+                speechSupported: !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+                recognition: null,
+                isSpeaking: false,
+
+                init() {
+                    this.speechSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+                },
+
+                toggleRecording() {
+                    if (!this.speechSupported) return;
+                    if (this.isRecording) {
+                        this.stopRecording();
+                    } else {
+                        this.startRecording();
+                    }
+                },
+
+                startRecording() {
+                    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    this.recognition = new SR();
+                    this.recognition.lang = this.sourceLang === 'zh' ? 'zh-TW' : 'ja-JP';
+                    this.recognition.interimResults = true;
+                    this.recognition.continuous = false;
+                    this.originalText = '';
+                    this.translatedText = '';
+                    this.isRecording = true;
+
+                    this.recognition.onresult = (e) => {
+                        let interim = '', final = '';
+                        for (let i = e.resultIndex; i < e.results.length; i++) {
+                            if (e.results[i].isFinal) final += e.results[i][0].transcript;
+                            else interim += e.results[i][0].transcript;
+                        }
+                        this.originalText = final || interim;
+                    };
+
+                    this.recognition.onend = () => {
+                        this.isRecording = false;
+                        if (this.originalText.trim()) this.translate(this.originalText.trim());
+                    };
+
+                    this.recognition.onerror = (e) => {
+                        this.isRecording = false;
+                        if (e.error === 'not-allowed') this.originalText = '⚠️ 請允許麥克風權限';
+                        else if (e.error !== 'no-speech') this.originalText = '辨識失敗，請再試一次';
+                    };
+
+                    this.recognition.start();
+                },
+
+                stopRecording() {
+                    if (this.recognition) this.recognition.stop();
+                    this.isRecording = false;
+                },
+
+                async translate(text) {
+                    this.isTranslating = true;
+                    const langPair = this.sourceLang === 'zh' ? 'zh-TW|ja' : 'ja|zh-TW';
+                    try {
+                        // MyMemory 免費翻譯 API，不需要 Key，每天 1000 次
+                        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`);
+                        const data = await res.json();
+                        const result = data.responseData?.translatedText || '';
+                        // MyMemory 有時回傳 MYMEMORY WARNING，過濾掉
+                        this.translatedText = result.startsWith('MYMEMORY') ? '翻譯失敗，請稍後再試' : result;
+                        this.$nextTick(() => this.speakTranslation());
+                    } catch(e) {
+                        this.translatedText = '翻譯失敗，請檢查網路';
+                    } finally {
+                        this.isTranslating = false;
+                    }
+                },
+
+                speakTranslation() {
+                    if (!this.translatedText || !window.speechSynthesis) return;
+                    window.speechSynthesis.cancel();
+                    const utter = new SpeechSynthesisUtterance(this.translatedText);
+                    utter.lang = this.sourceLang === 'zh' ? 'ja-JP' : 'zh-TW';
+                    utter.rate = 0.9;
+                    utter.pitch = 1;
+                    this.isSpeaking = true;
+                    utter.onend = () => { this.isSpeaking = false; };
+                    utter.onerror = () => { this.isSpeaking = false; };
+                    window.speechSynthesis.speak(utter);
+                }
+            };
+        }
+
         function tripData() {
             const daysData = [
                 {
@@ -1007,7 +1192,7 @@
                 // ✅ FIX: simulatedTime 在 return 物件內宣告
                 simulatedTime: null,
                 activeEventId: null,
-                statusMsg: 'v47 • Made with ❤️',
+                statusMsg: 'v48 • Made with ❤️',
 
                 phrases: { food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ], shop: [ { jp: 'いくらですか？', cn: '請問多少錢？', romaji: 'Ikura desuka?' }, { jp: 'クレジットカードは使えますか？', cn: '可用信用卡嗎？', romaji: 'Kurejitto kaado wa tsukaemasuka?' }, { jp: '新しい在庫はありますか？', cn: '有新庫存嗎？', romaji: 'Atarashii zaiko wa arimasuka?' }, { jp: '免税できますか？', cn: '可免稅嗎？', romaji: 'Menzei dekimasuka?' }, { jp: '袋を買います', cn: '買袋子', romaji: 'Fukuro o kaimasu' } ], help: [ { jp: '駅はどこですか？', cn: '車站在哪裡？', romaji: 'Eki wa doko desuka?' }, { jp: '写真を撮ってもらえますか？', cn: '可以幫我拍照嗎？', romaji: 'Shashin o totte moraemasuka?' }, { jp: 'すみません', cn: '不好意思 / 借過', romaji: 'Sumimasen' }, { jp: '道に迷いました', cn: '我迷路了', romaji: 'Michi ni mayoimashita' }, { jp: 'トイレはどこ？', cn: '廁所在哪？', romaji: 'Toire wa doko?' } ] },
 
