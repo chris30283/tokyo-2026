@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     
-    <title>2026 東京賞櫻 (v46)</title>
+    <title>2026 東京賞櫻 (v47)</title>
     
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -402,46 +402,32 @@
                     </div>
                     <div class="space-y-3" x-show="moneyList.length > 0">
                         <template x-for="(item, idx) in moneyList" :key="idx">
-                            <div x-data="{ pressing: false, showDel: false, pressTimer: null }"
-                                 class="mb-3"
-                                 @touchstart="pressTimer = setTimeout(() => { showDel = !showDel; pressing = false; }, 500); pressing = true;"
-                                 @touchend="clearTimeout(pressTimer); pressing = false;"
-                                 @touchmove="clearTimeout(pressTimer); pressing = false;"
-                                 @mousedown="pressTimer = setTimeout(() => { showDel = !showDel; }, 600);"
-                                 @mouseup="clearTimeout(pressTimer);">
-                                <div class="money-item-card p-3 flex justify-between items-center" :class="{ 'pressing': pressing }"
-                                     @click="if(!showDel){ editMoney = {...item, idx}; showEditMoneyModal = true; }">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0" :class="getMoneyIcon(item.cat).bg">
-                                            <i :class="getMoneyIcon(item.cat).icon"></i>
-                                        </div>
-                                        <div>
-                                            <div class="font-bold text-slate-800" x-text="item.title"></div>
-                                            <div class="text-[10px] text-slate-400 flex items-center gap-1">
-                                                <span x-text="item.date"></span>
-                                                <span class="text-slate-200">•</span>
-                                                <span x-text="getCatLabel(item.cat)"></span>
-                                            </div>
-                                        </div>
+                            <div class="money-item-card p-3 flex items-center gap-2">
+                                <!-- 點圖示/文字區域 → 編輯 -->
+                                <div class="flex items-center gap-3 flex-1 min-w-0"
+                                     @click="editMoney = {...item, idx}; showEditMoneyModal = true;">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0" :class="getMoneyIcon(item.cat).bg">
+                                        <i :class="getMoneyIcon(item.cat).icon"></i>
                                     </div>
-                                    <div class="text-right flex-shrink-0 ml-2">
-                                        <div class="font-bold font-mono text-slate-800">¥<span x-text="Number(item.amount).toLocaleString()"></span></div>
-                                        <div class="text-[10px] mt-0.5" :class="showDel ? 'text-red-400 font-bold' : 'text-slate-300'">
-                                            <span x-text="showDel ? '點擊刪除 ↓' : '長按管理'"></span>
+                                    <div class="min-w-0">
+                                        <div class="font-bold text-slate-800 truncate" x-text="item.title"></div>
+                                        <div class="text-[10px] text-slate-400 flex items-center gap-1">
+                                            <span x-text="item.date"></span>
+                                            <span class="text-slate-200">•</span>
+                                            <span x-text="getCatLabel(item.cat)"></span>
                                         </div>
                                     </div>
                                 </div>
-                                <!-- 長按後展開的刪除區 -->
-                                <div class="money-delete-btn" :class="{ 'show': showDel }">
-                                    <div class="flex gap-2 px-1 pt-2">
-                                        <button @click="showDel = false" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-500 text-xs font-bold active:scale-95 transition-transform">
-                                            取消
-                                        </button>
-                                        <button @click="deleteMoney(idx); showDel = false;" class="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-xs font-bold active:scale-95 transition-transform flex items-center justify-center gap-1">
-                                            <i class="ph-bold ph-trash"></i> 確認刪除
-                                        </button>
-                                    </div>
+                                <!-- 金額 -->
+                                <div class="text-right flex-shrink-0"
+                                     @click="editMoney = {...item, idx}; showEditMoneyModal = true;">
+                                    <div class="font-bold font-mono text-slate-800">¥<span x-text="Number(item.amount).toLocaleString()"></span></div>
                                 </div>
+                                <!-- 一鍵刪除按鈕 -->
+                                <button @click.stop="deleteMoney(idx); toast('已刪除');"
+                                        class="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0 active:bg-red-100 active:scale-90 transition-all ml-1">
+                                    <i class="ph-bold ph-trash text-red-400"></i>
+                                </button>
                             </div>
                         </template>
                     </div>
@@ -1021,7 +1007,7 @@
                 // ✅ FIX: simulatedTime 在 return 物件內宣告
                 simulatedTime: null,
                 activeEventId: null,
-                statusMsg: 'v46 • Made with ❤️',
+                statusMsg: 'v47 • Made with ❤️',
 
                 phrases: { food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ], shop: [ { jp: 'いくらですか？', cn: '請問多少錢？', romaji: 'Ikura desuka?' }, { jp: 'クレジットカードは使えますか？', cn: '可用信用卡嗎？', romaji: 'Kurejitto kaado wa tsukaemasuka?' }, { jp: '新しい在庫はありますか？', cn: '有新庫存嗎？', romaji: 'Atarashii zaiko wa arimasuka?' }, { jp: '免税できますか？', cn: '可免稅嗎？', romaji: 'Menzei dekimasuka?' }, { jp: '袋を買います', cn: '買袋子', romaji: 'Fukuro o kaimasu' } ], help: [ { jp: '駅はどこですか？', cn: '車站在哪裡？', romaji: 'Eki wa doko desuka?' }, { jp: '写真を撮ってもらえますか？', cn: '可以幫我拍照嗎？', romaji: 'Shashin o totte moraemasuka?' }, { jp: 'すみません', cn: '不好意思 / 借過', romaji: 'Sumimasen' }, { jp: '道に迷いました', cn: '我迷路了', romaji: 'Michi ni mayoimashita' }, { jp: 'トイレはどこ？', cn: '廁所在哪？', romaji: 'Toire wa doko?' } ] },
 
