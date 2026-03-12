@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     
-    <title>2026 東京賞櫻 (v49)</title>
+    <title>2026 東京賞櫻 (v50)</title>
     
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -111,11 +111,10 @@
             <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center">
                 <div class="flex items-center gap-2">
                     <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600"><i class="ph-fill ph-robot"></i></div>
-                    <div><h3 class="font-bold text-slate-800 text-sm">Sakura Bot</h3><p class="text-[10px] text-green-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block"></span> Online</p></div>
+                    <div><h3 class="font-bold text-slate-800 text-sm">Sakura Bot</h3><p class="text-[10px] text-green-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block"></span> Online • 支援圖片辨識 📷</p></div>
                 </div>
                 <div class="flex gap-2">
                     <button @click="showKeySettings = !showKeySettings" class="p-2 text-slate-400 hover:text-slate-600 transition-colors"><i class="ph-bold ph-gear"></i></button>
-                    <!-- ✅ UI: 加入清除歷史按鈕 -->
                     <button @click="clearChatHistory()" class="p-2 text-slate-400 hover:text-red-400 transition-colors" title="清除對話"><i class="ph-bold ph-trash"></i></button>
                     <button @click="showChatModal = false" class="p-2 text-slate-400"><i class="ph-bold ph-x"></i></button>
                 </div>
@@ -137,15 +136,23 @@
 
             <div class="flex-1 overflow-y-auto p-4 bg-white flex flex-col" id="chatContainer">
                 <div class="flex-1 space-y-4 min-h-[100px]">
-                    <div x-show="chatHistory.length === 0" class="text-center text-slate-400 text-xs mt-8 space-y-2">
-                        <div class="text-3xl">🌸</div>
-                        <div>嗨！我是 Sakura Bot 導遊。<br>試著問我：「明天去哪裡？」</div>
+                    <div x-show="chatHistory.length === 0" class="text-center text-slate-400 text-sm mt-6 space-y-3 px-4">
+                        <div class="text-4xl">🌸</div>
+                        <div class="font-bold text-slate-600">嗨！我是 Sakura Bot</div>
+                        <div class="text-xs leading-relaxed">問我行程、天氣、推薦餐廳…<br>或直接<b class="text-violet-600">拍照／上傳圖片</b>讓我翻譯！</div>
+                        <div class="flex justify-center gap-2 flex-wrap pt-1">
+                            <span class="text-[10px] bg-orange-100 text-orange-600 font-bold px-2.5 py-1 rounded-full">🍱 菜單翻譯</span>
+                            <span class="text-[10px] bg-sky-100 text-sky-600 font-bold px-2.5 py-1 rounded-full">🪧 告示辨識</span>
+                            <span class="text-[10px] bg-emerald-100 text-emerald-600 font-bold px-2.5 py-1 rounded-full">💊 藥品辨識</span>
+                            <span class="text-[10px] bg-violet-100 text-violet-600 font-bold px-2.5 py-1 rounded-full">🗺️ 地圖導覽</span>
+                        </div>
                     </div>
                     <template x-for="(msg, idx) in chatHistory" :key="idx">
                         <div class="flex flex-col w-full">
-                            <!-- ✅ UI: 顯示時間戳 -->
                             <div class="text-[10px] text-slate-300 mb-1" :class="msg.role === 'user' ? 'text-right' : 'text-left'" x-text="msg.time"></div>
-                            <div class="chat-bubble shadow-sm markdown-body" :class="msg.role === 'user' ? 'chat-user' : 'chat-ai'" x-html="renderMarkdown(msg.content)"></div>
+                            <div class="chat-bubble shadow-sm markdown-body" 
+                                 :class="msg.role === 'user' ? 'chat-user' : 'chat-ai'"
+                                 x-html="msg.isHtml ? msg.content : renderMarkdown(msg.content)"></div>
                         </div>
                     </template>
                     <div x-show="isAiThinking" class="chat-bubble chat-ai w-16 flex items-center justify-center">
@@ -163,10 +170,147 @@
                 <button @click="quickAsk('西瓜卡餘額不夠，去哪裡加值？')" class="flex-shrink-0 text-[10px] bg-green-50 text-green-600 font-bold px-3 py-1.5 rounded-full border border-green-100 active:scale-95 transition-transform">💳 西瓜卡加值</button>
             </div>
 
-            <div class="p-3 bg-slate-50 border-t border-slate-100 flex gap-2 mt-2">
-                <input type="text" x-model="chatInput" @keydown.enter="sendChat()" placeholder="輸入訊息..." class="flex-1 bg-white border rounded-full px-4 py-2 text-sm outline-none focus:border-indigo-500 transition-colors">
-                <button @click="sendChat()" :disabled="!chatInput.trim() || isAiThinking" class="w-10 h-10 bg-indigo-500 rounded-full text-white flex items-center justify-center shadow-md active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all">
-                    <i class="ph-bold ph-paper-plane-right"></i>
+            <!-- 圖片辨識入口（無圖時） -->
+            <div x-show="!pendingImage" class="px-3 pt-2 pb-1">
+                <!-- Banner 提示 -->
+                <div class="bg-gradient-to-r from-violet-500 to-indigo-500 rounded-2xl p-3 mb-2 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                        <i class="ph-fill ph-camera text-white text-xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-white font-bold text-xs">拍照 / 上傳圖片</div>
+                        <div class="text-white/70 text-[10px] mt-0.5">菜單・告示牌・藥品・地圖 → 即時辨識翻譯</div>
+                    </div>
+                    <div class="flex gap-1.5 flex-shrink-0">
+                        <button @click="document.getElementById('chatCameraCapture').click()"
+                                class="flex flex-col items-center justify-center gap-0.5 bg-white rounded-xl px-3 py-2 active:scale-90 transition-transform shadow-sm">
+                            <i class="ph-fill ph-camera text-violet-600 text-lg"></i>
+                            <span class="text-[9px] font-bold text-violet-600">拍照</span>
+                        </button>
+                        <button @click="document.getElementById('chatImageUpload').click()"
+                                class="flex flex-col items-center justify-center gap-0.5 bg-white/20 border border-white/30 rounded-xl px-3 py-2 active:scale-90 transition-transform">
+                            <i class="ph-fill ph-images text-white text-lg"></i>
+                            <span class="text-[9px] font-bold text-white">相簿</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- 場景快捷 -->
+                <div class="flex gap-1.5">
+                    <button @click="document.getElementById('chatCameraCapture').click(); chatInput = '請完整翻譯菜單所有內容，並幫我推薦好吃的料理'"
+                            class="flex-1 text-[10px] bg-orange-50 text-orange-600 font-bold py-2 rounded-xl border border-orange-100 active:scale-95 transition-transform">
+                        🍱 菜單翻譯
+                    </button>
+                    <button @click="document.getElementById('chatCameraCapture').click(); chatInput = '請翻譯並解釋這個告示牌的意思，有什麼需要注意的？'"
+                            class="flex-1 text-[10px] bg-sky-50 text-sky-600 font-bold py-2 rounded-xl border border-sky-100 active:scale-95 transition-transform">
+                        🪧 告示翻譯
+                    </button>
+                    <button @click="document.getElementById('chatCameraCapture').click(); chatInput = '幫我辨識這個藥品包裝或說明書的內容，這是什麼藥？怎麼使用？'"
+                            class="flex-1 text-[10px] bg-emerald-50 text-emerald-600 font-bold py-2 rounded-xl border border-emerald-100 active:scale-95 transition-transform">
+                        💊 藥品辨識
+                    </button>
+                </div>
+            </div>
+
+            <!-- 圖片預覽區（有圖時） -->
+            <div x-show="pendingImage" class="px-3 pt-2">
+                <div class="bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-200 rounded-2xl p-3">
+                    <div class="flex gap-3 mb-3">
+                        <div class="relative flex-shrink-0">
+                            <img :src="pendingImage" class="h-20 w-20 rounded-xl object-cover border-2 border-indigo-200 shadow-sm">
+                            <button @click="pendingImage = null; pendingImageMime = null; pendingImageBase64 = null; chatInput = ''"
+                                    class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full text-white flex items-center justify-center shadow active:scale-90 transition-transform">
+                                <i class="ph-bold ph-x text-[10px]"></i>
+                            </button>
+                        </div>
+                        <div class="flex-1 flex flex-col justify-center">
+                            <div class="text-xs font-bold text-indigo-700 flex items-center gap-1 mb-1">
+                                <i class="ph-fill ph-check-circle text-green-500"></i> 圖片已選取
+                            </div>
+                            <div class="text-[10px] text-slate-500 mb-2">選擇場景快速發送，或在下方輸入框自訂問題後按送出</div>
+                            <!-- 換圖按鈕 -->
+                            <div class="flex gap-1.5">
+                                <button @click="document.getElementById('chatCameraCapture').click()"
+                                        class="flex-1 text-[9px] bg-violet-100 text-violet-600 font-bold py-1.5 rounded-lg active:scale-95 transition-transform flex items-center justify-center gap-1">
+                                    <i class="ph-bold ph-camera"></i> 重拍
+                                </button>
+                                <button @click="document.getElementById('chatImageUpload').click()"
+                                        class="flex-1 text-[9px] bg-slate-100 text-slate-600 font-bold py-1.5 rounded-lg active:scale-95 transition-transform flex items-center justify-center gap-1">
+                                    <i class="ph-bold ph-images"></i> 換圖
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 場景按鈕 -->
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button @click="chatInput = '請完整翻譯菜單所有內容，以繁體中文標示，並推薦 3 道好吃的料理'; sendChat()"
+                                class="text-[11px] bg-orange-500 text-white font-bold px-2 py-2.5 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-1 shadow-sm">
+                            🍱 菜單翻譯
+                        </button>
+                        <button @click="chatInput = '請翻譯並解釋這個告示牌的意思，有什麼需要注意的嗎？'; sendChat()"
+                                class="text-[11px] bg-sky-500 text-white font-bold px-2 py-2.5 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-1 shadow-sm">
+                            🪧 告示翻譯
+                        </button>
+                        <button @click="chatInput = '幫我辨識這個藥品包裝的內容，這是什麼藥？怎麼使用？有什麼注意事項？'; sendChat()"
+                                class="text-[11px] bg-emerald-500 text-white font-bold px-2 py-2.5 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-1 shadow-sm">
+                            💊 藥品辨識
+                        </button>
+                        <button @click="chatInput = '請翻譯這張地圖或路線圖的內容，告訴我怎麼走'; sendChat()"
+                                class="text-[11px] bg-teal-500 text-white font-bold px-2 py-2.5 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-1 shadow-sm">
+                            🗺️ 地圖導覽
+                        </button>
+                        <button @click="chatInput = '請辨識圖片中的商品名稱與價格'; sendChat()"
+                                class="text-[11px] bg-pink-500 text-white font-bold px-2 py-2.5 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-1 shadow-sm">
+                            🏷️ 商品辨識
+                        </button>
+                        <button @click="chatInput = chatInput.trim() || '請辨識並翻譯這張圖片的所有文字內容'; sendChat()"
+                                class="text-[11px] bg-indigo-500 text-white font-bold px-2 py-2.5 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-1 shadow-sm">
+                            🔍 全文辨識
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 輸入列 -->
+            <div class="p-3 bg-slate-50 border-t border-slate-100 flex gap-2 mt-1 items-end">
+                <!-- 隱藏的 file inputs -->
+                <input type="file" id="chatImageUpload" accept="image/*" class="hidden"
+                       @change="handleImageFile($event)">
+                <input type="file" id="chatCameraCapture" accept="image/*" capture="environment" class="hidden"
+                       @change="handleImageFile($event)">
+
+                <!-- 圖片/相機按鈕：無圖時顯示，有圖時顯示換圖 -->
+                <div class="relative flex-shrink-0">
+                    <button x-show="!pendingImage"
+                            @click="showImgMenu = !showImgMenu"
+                            class="w-10 h-10 rounded-full bg-violet-500 flex items-center justify-center active:scale-90 transition-transform shadow-sm">
+                        <i class="ph-fill ph-camera text-white text-lg"></i>
+                    </button>
+                    <button x-show="pendingImage"
+                            @click="pendingImage=null;pendingImageMime=null;pendingImageBase64=null;chatInput=''"
+                            class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center active:scale-90 transition-transform border border-red-200">
+                        <i class="ph-bold ph-x text-red-500"></i>
+                    </button>
+                    <!-- 小選單：拍照 or 相簿 -->
+                    <div x-show="showImgMenu" @click.away="showImgMenu=false"
+                         class="absolute bottom-12 left-0 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden w-32 z-50">
+                        <button @click="document.getElementById('chatCameraCapture').click(); showImgMenu=false"
+                                class="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-bold text-slate-700 active:bg-slate-50 transition-colors">
+                            <i class="ph-fill ph-camera text-violet-500"></i> 拍照
+                        </button>
+                        <div class="h-px bg-slate-100"></div>
+                        <button @click="document.getElementById('chatImageUpload').click(); showImgMenu=false"
+                                class="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-bold text-slate-700 active:bg-slate-50 transition-colors">
+                            <i class="ph-fill ph-images text-indigo-500"></i> 相簿
+                        </button>
+                    </div>
+                </div>
+
+                <input type="text" x-model="chatInput" @keydown.enter="sendChat()"
+                       :placeholder="pendingImage ? '自訂問題（或點上方按鈕）...' : '輸入訊息...'"
+                       class="flex-1 bg-white border rounded-full px-4 py-2.5 text-sm outline-none focus:border-indigo-400 transition-colors min-w-0">
+                <button @click="sendChat()" :disabled="(!chatInput.trim() && !pendingImage) || isAiThinking"
+                        class="w-11 h-11 bg-indigo-500 rounded-full text-white flex items-center justify-center shadow-md active:scale-95 disabled:opacity-40 disabled:scale-100 transition-all flex-shrink-0">
+                    <i class="ph-bold" :class="isAiThinking ? 'ph-spinner-gap animate-spin' : 'ph-paper-plane-right'"></i>
                 </button>
             </div>
         </div>
@@ -1198,6 +1342,7 @@
                 apiKey: localStorage.getItem('gemini_api_key') || '',
                 apiKeyTemp: localStorage.getItem('gemini_api_key') || '',
                 chatInput: '', isAiThinking: false,
+                pendingImage: null, pendingImageMime: null, pendingImageBase64: null, showImgMenu: false,
                 modelId: localStorage.getItem('gemini_model_id') || 'gemini-2.5-flash',
                 modelIdTemp: localStorage.getItem('gemini_model_id') || 'gemini-2.5-flash',
                 availableModels: [],
@@ -1219,7 +1364,7 @@
                 // ✅ FIX: simulatedTime 在 return 物件內宣告
                 simulatedTime: null,
                 activeEventId: null,
-                statusMsg: 'v49 • Made with ❤️',
+                statusMsg: 'v50 • Made with ❤️',
 
                 phrases: { food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ], shop: [ { jp: 'いくらですか？', cn: '請問多少錢？', romaji: 'Ikura desuka?' }, { jp: 'クレジットカードは使えますか？', cn: '可用信用卡嗎？', romaji: 'Kurejitto kaado wa tsukaemasuka?' }, { jp: '新しい在庫はありますか？', cn: '有新庫存嗎？', romaji: 'Atarashii zaiko wa arimasuka?' }, { jp: '免税できますか？', cn: '可免稅嗎？', romaji: 'Menzei dekimasuka?' }, { jp: '袋を買います', cn: '買袋子', romaji: 'Fukuro o kaimasu' } ], help: [ { jp: '駅はどこですか？', cn: '車站在哪裡？', romaji: 'Eki wa doko desuka?' }, { jp: '写真を撮ってもらえますか？', cn: '可以幫我拍照嗎？', romaji: 'Shashin o totte moraemasuka?' }, { jp: 'すみません', cn: '不好意思 / 借過', romaji: 'Sumimasen' }, { jp: '道に迷いました', cn: '我迷路了', romaji: 'Michi ni mayoimashita' }, { jp: 'トイレはどこ？', cn: '廁所在哪？', romaji: 'Toire wa doko?' } ] },
 
@@ -1371,12 +1516,122 @@
                     this.toast('設定已儲存');
                 },
 
+                // 處理圖片選取
+                handleImageFile(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    event.target.value = ''; // 允許重複選同張
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const dataUrl = e.target.result;
+                        this.pendingImage = dataUrl; // 預覽用
+                        this.pendingImageMime = file.type || 'image/jpeg';
+                        this.pendingImageBase64 = dataUrl.split(',')[1]; // base64 only
+                    };
+                    reader.readAsDataURL(file);
+                },
+
                 async sendChat() { 
-                    if(!this.chatInput.trim() || this.isAiThinking) return;
+                    const hasText = this.chatInput.trim();
+                    const hasImage = !!this.pendingImageBase64;
+                    if ((!hasText && !hasImage) || this.isAiThinking) return;
+
                     const msg = this.chatInput.trim();
                     this.chatInput = '';
-                    this.pushMsg('user', msg);
-                    await this.performChat(msg);
+
+                    if (hasImage) {
+                        // 圖片模式：顯示預覽縮圖在對話泡泡
+                        const imageDataUrl = this.pendingImage;
+                        const base64 = this.pendingImageBase64;
+                        const mime = this.pendingImageMime;
+                        const userText = msg || '幫我辨識並翻譯這張圖片的文字';
+
+                        // 在對話記錄中顯示圖片 + 文字（美化泡泡）
+                        const sceneEmoji = userText.includes('菜單') ? '🍱' : userText.includes('告示') ? '🪧' : userText.includes('藥') ? '💊' : userText.includes('地圖') ? '🗺️' : '🔍';
+                        this.chatHistory.push({
+                            role: 'user',
+                            content: `<img src="${imageDataUrl}" class="w-full max-h-52 rounded-2xl mb-2 block object-cover shadow-sm"><div class="text-xs font-bold">${sceneEmoji} ${userText}</div>`,
+                            time: new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'}),
+                            isHtml: true
+                        });
+                        localStorage.setItem('chat_history', JSON.stringify(this.chatHistory));
+                        this.$nextTick(() => this.scrollToBottom());
+
+                        // 清除 pending
+                        this.pendingImage = null;
+                        this.pendingImageMime = null;
+                        this.pendingImageBase64 = null;
+
+                        await this.performChatWithImage(userText, base64, mime);
+                    } else {
+                        this.pushMsg('user', msg);
+                        await this.performChat(msg);
+                    }
+                },
+
+                // 圖片 + 文字送 Gemini Vision
+                async performChatWithImage(userText, base64, mime) {
+                    if (!this.apiKey) { alert('請先設定 API Key'); this.showKeySettings = true; return; }
+                    this.isAiThinking = true;
+                    const cleanModelId = this.modelId.replace('models/', '');
+
+                    // 根據使用者的提問關鍵字選擇對應的 prompt 策略
+                    let systemPrompt = '';
+                    const t = userText;
+                    if (t.includes('菜單') || t.includes('menu') || t.includes('料理')) {
+                        systemPrompt = `你是旅遊導遊助理「Sakura Bot」。請針對這份菜單：
+1. 📋 **完整翻譯**所有品項名稱（日文 → 繁體中文），含價格
+2. 🌟 **推薦 3 道**最值得嘗試的料理，說明理由
+3. ⚠️ **注意**：標記含常見過敏原（花生、海鮮、麩質）的品項
+格式要清楚，適合手機閱讀。`;
+                    } else if (t.includes('告示') || t.includes('牌') || t.includes('標') || t.includes('注意')) {
+                        systemPrompt = `你是旅遊導遊助理「Sakura Bot」。請針對這個告示/標示：
+1. 📝 **完整翻譯**所有文字（日文 → 繁體中文）
+2. ⚠️ **重點說明**：這個告示在告訴我們什麼？有什麼要注意的？
+3. 💡 **旅遊小提醒**：台灣旅客常見的誤解或需要特別注意的地方`;
+                    } else if (t.includes('藥') || t.includes('包裝') || t.includes('說明書')) {
+                        systemPrompt = `你是旅遊導遊助理「Sakura Bot」。請針對這個藥品/產品：
+1. 💊 **商品名稱與用途**（日文原名 + 中文說明）
+2. 📋 **主要成分**（翻譯關鍵成分名稱）
+3. 📏 **使用方式與劑量**（翻譯服用說明）
+4. ⚠️ **注意事項**（禁忌症、副作用等）
+如非藥品，請說明產品用途。`;
+                    } else if (t.includes('地圖') || t.includes('路線') || t.includes('怎麼走')) {
+                        systemPrompt = `你是旅遊導遊助理「Sakura Bot」。請針對這張地圖/路線圖：
+1. 🗺️ **說明地圖內容**：這是哪裡？顯示什麼資訊？
+2. 📍 **重要地標翻譯**：翻譯圖中的地名與設施名稱
+3. 🚶 **路線建議**：如何善用這張地圖導航？`;
+                    } else {
+                        systemPrompt = `你是旅遊導遊助理「Sakura Bot」，正在幫助台灣旅客在日本旅遊。請：
+1. 🔍 **辨識圖片內容**：說明這是什麼
+2. 📝 **翻譯所有文字**：將圖中日文翻譯成繁體中文
+3. 💡 **給予實用建議**：根據圖片內容給出對旅客有用的資訊
+使用者的問題是：${userText}`;
+                    }
+
+                    const payload = {
+                        contents: [{
+                            parts: [
+                                { text: systemPrompt },
+                                { inline_data: { mime_type: mime, data: base64 } }
+                            ]
+                        }]
+                    };
+                    try {
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cleanModelId}:generateContent?key=${this.apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (!res.ok) throw new Error((await res.json()).error?.message);
+                        const data = await res.json();
+                        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '抱歉，無法辨識此圖片。';
+                        this.pushMsg('ai', reply);
+                    } catch (e) {
+                        this.pushMsg('ai', `❌ 圖片辨識失敗：${e.message}\n\n請確認 API Key 已設定且有效。`);
+                    } finally {
+                        this.isAiThinking = false;
+                    }
                 },
 
                 // ✅ FIX: 正確維護多輪對話 (conversation history)
