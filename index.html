@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     
-    <title>2026 東京賞櫻 (v48)</title>
+    <title>2026 東京賞櫻 (v49)</title>
     
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -309,7 +309,7 @@
                 </div>
 
                 <!-- Slide 1: 資訊 -->
-                <div class="swiper-slide px-4">
+                <div class="swiper-slide px-4 pb-6">
                     <div class="ios-card p-4 mb-6 bg-slate-800 text-white">
                         <div class="flex items-center gap-2 mb-4"><i class="ph-fill ph-ticket text-yellow-400 text-xl"></i><h3 class="font-bold">票券收納夾</h3></div>
                         <div class="space-y-3">
@@ -345,8 +345,34 @@
                             <i class="ph-duotone ph-locker text-2xl text-blue-500 mb-1"></i><span class="text-xs font-bold text-slate-700">置物櫃</span>
                         </a>
                     </div>
+
+                    <!-- 箱根行李托運服務 -->
+                    <a href="https://www.hakonenavi.jp/hakone-luggage-transport-service/tw/" target="_blank"
+                       class="block ios-card p-4 mb-6 active:scale-98 transition-transform border border-teal-100 bg-gradient-to-br from-teal-50 to-white">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-teal-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                <i class="ph-fill ph-suitcase-rolling text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h3 class="font-bold text-slate-800 text-sm">箱根行李托運服務</h3>
+                                    <i class="ph-bold ph-arrow-square-out text-teal-400 text-sm flex-shrink-0 ml-1"></i>
+                                </div>
+                                <p class="text-[11px] text-slate-500 leading-relaxed mb-2">在箱根湯本站寄放行李，直送旅館 — 可輕裝遊覽大涌谷、海盜船，無需扛著行李。</p>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <span class="text-[10px] bg-teal-100 text-teal-700 font-bold px-2 py-0.5 rounded-full">箱根湯本站內受理</span>
+                                    <span class="text-[10px] bg-teal-100 text-teal-700 font-bold px-2 py-0.5 rounded-full">支援線上預約</span>
+                                    <span class="text-[10px] bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full">⚠ 當日網路預約截止 11:30</span>
+                                </div>
+                                <div class="mt-2 text-[10px] text-slate-400 flex items-center gap-1">
+                                    <i class="ph-bold ph-info"></i>
+                                    不可托運：貴重品・傘・嬰兒車・玻璃瓶・精密電子儀器・易腐物品
+                                </div>
+                            </div>
+                        </div>
+                    </a>
                     
-                    <div class="ios-card p-4">
+                    <div class="ios-card p-4 mb-4">
                         <div class="flex items-center gap-2 mb-4">
                             <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-500"><i class="ph-fill ph-translate"></i></div>
                             <h3 class="font-bold text-slate-800">手指日文</h3>
@@ -1063,6 +1089,7 @@
                           "tips": "憑箱根周遊券門票折抵 ¥200。館內有足湯，記得帶毛巾！",
                           "transportDetail": "🔹路線：強羅 ➔ 雕刻之森（步行或電車一站）<br>🔹<span class='bg-orange-100 text-orange-600 px-1 rounded text-[10px]'>周遊券OK</span>" },
                         { "time": "16:30", "type": "hotel", "name": "♨️ 溫泉 Check-in", "desc": "一泊二食旅館，享用溫泉與晚餐。", "location": "Hakone Mizunoto",
+                          "transportDetail": "🔹新宿站搭小田急特急（浪漫特快）約 1.5 小時 → 箱根湯本站<br>🔹換乘箱根登山電車約 30 分 → 小涌谷站下車<br>🔹搭乘旅館接駁巴士約 3 分鐘即達<br>🔸<b>接駁巴士時間：下午 2 時 ～ 下午 5 時</b>（請配合班次）",
                           "taxi": { "jpName": "箱根小涌谷温泉 水の音", "address": "神奈川県足柄下郡箱根町小涌谷492-23" } }
                     ]
                 },
@@ -1192,7 +1219,7 @@
                 // ✅ FIX: simulatedTime 在 return 物件內宣告
                 simulatedTime: null,
                 activeEventId: null,
-                statusMsg: 'v48 • Made with ❤️',
+                statusMsg: 'v49 • Made with ❤️',
 
                 phrases: { food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ], shop: [ { jp: 'いくらですか？', cn: '請問多少錢？', romaji: 'Ikura desuka?' }, { jp: 'クレジットカードは使えますか？', cn: '可用信用卡嗎？', romaji: 'Kurejitto kaado wa tsukaemasuka?' }, { jp: '新しい在庫はありますか？', cn: '有新庫存嗎？', romaji: 'Atarashii zaiko wa arimasuka?' }, { jp: '免税できますか？', cn: '可免稅嗎？', romaji: 'Menzei dekimasuka?' }, { jp: '袋を買います', cn: '買袋子', romaji: 'Fukuro o kaimasu' } ], help: [ { jp: '駅はどこですか？', cn: '車站在哪裡？', romaji: 'Eki wa doko desuka?' }, { jp: '写真を撮ってもらえますか？', cn: '可以幫我拍照嗎？', romaji: 'Shashin o totte moraemasuka?' }, { jp: 'すみません', cn: '不好意思 / 借過', romaji: 'Sumimasen' }, { jp: '道に迷いました', cn: '我迷路了', romaji: 'Michi ni mayoimashita' }, { jp: 'トイレはどこ？', cn: '廁所在哪？', romaji: 'Toire wa doko?' } ] },
 
