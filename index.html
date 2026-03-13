@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     
-    <title>2026 東京賞櫻 (v51)</title>
+    <title>2026 東京賞櫻 (v53)</title>
     
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -1184,32 +1184,40 @@
                         { "time": "09:00", "type": "transport", "name": "🚃 浪漫特快出發", "desc": "新宿小田急搭浪漫特快前往箱根。", "location": "Shinjuku Station", "tag": "需預約",
                           "transportDetail": "🔹路線：新宿（小田急）➔ 箱根湯本<br>🔹時間：09:00 出發，約 10:15 抵達<br>🔹提醒：周遊券含基本運費，特急券需另購",
                           "luggageInfo": { "summary": "搭計程車至「新宿西口地上層小田急百貨前」最順！", "steps": [{ "text": "請司機停在「新宿西口地上 Odakyu Department Store 1F」。", "link": "https://www.google.com/maps/search/?api=1&query=Shinjuku+Station+West+Exit+Odakyu" }, { "text": "下車直走即是「小田急線 西口地上改札」。" }, { "text": "浪漫特快月台在 1 樓，完全無樓梯，行李直推上車！" }] } },
-                        { "time": "11:30", "type": "food", "name": "🍱 強羅午餐", "desc": "田村銀勝亭豆腐鍋，抽號排隊制。", "location": "Gora", "tag": "必吃",
-                          "restaurants": [{"name":"田村銀勝亭", "dish":"豆腐豬排煮", "area":"Gora", "price":"2000-3000", "queue":"30-60分（抽號）"}],
-                          "transportDetail": "🔹路線：箱根湯本 ➔ 強羅（箱根登山電車）<br>🔹<span class='bg-orange-100 text-orange-600 px-1 rounded text-[10px]'>周遊券OK</span>" },
+                        { "time": "10:30", "type": "transport", "name": "🚃 抵達箱根湯本 · 寄放行李", "desc": "抵站後立刻辦理行李托運！托運至水之音，下午 check-in 時直接領取，全程輕裝遊覽。",
+                          "transportDetail": "🔹新宿 09:00 → 箱根湯本 10:30（浪漫特快 E268）<br>🔹座位：1號車 3C & 3D<br><br>🧳 <b>行李托運流程</b><br>🔹出站後前往「箱根湯本站內」托運受理處<br>🔹受理時間：<b>08:30～12:00</b>（⚠ 必須在 12:00 前辦理）<br>🔹指定配送至：箱根小涌谷温泉 水の音<br>🔹配送時間：當日 15:00 以後抵達旅館<br>🔹費用：約 ¥1,500/件<br>🔹<a href='https://www.hakonenavi.jp/hakone-luggage-transport-service/tw/' target='_blank' class='text-sky-400 underline font-bold'>📦 箱根行李托運官網 →</a>" },
+                        { "time": "11:00", "type": "food", "name": "🥣 箱根湯本午餐", "desc": "湯葉丼 直吉：豆腐皮蓋飯附小菜與豆乳寒天甜點，河邊老舖氣氛絕佳。建議 11:00 開門前到場。", "location": "Hakone-Yumoto", "tag": "必吃",
+                          "restaurants": [
+                            {"name":"湯葉丼 直吉", "dish":"湯葉丼 ¥2,300 附甜點", "area":"箱根湯本（早川旁）", "price":"2000-3000", "queue":"建議 11:00 前到，週二公休"},
+                            {"name":"はつ花そば 本店", "dish":"自然薯天婦羅蕎麥麵 ¥1,400~", "area":"箱根湯本站徒步5分", "price":"1400-2500", "queue":"1934年老舖，中午有時需稍候"},
+                            {"name":"808 Monsmare", "dish":"薪火 Napoli Pizza Lunch Set ¥1,958", "area":"湯本站徒步1分", "price":"1500-2500", "queue":"建議預約"}
+                          ],
+                          "transportDetail": "🔹湯葉丼 直吉：箱根湯本站步行約 3 分鐘<br>🔹地址：湯本696<br>🔹⚠ 週二公休" },
+                        { "time": "12:30", "type": "transport", "name": "🚞 搭登山電車前往強羅", "desc": "箱根湯本 → 強羅，約 35 分鐘，周遊券可用。",
+                          "transportDetail": "🔹箱根登山電車：箱根湯本 ➔ 強羅（終點）約 35 分<br>🔹<span class='bg-orange-100 text-orange-600 px-1 rounded text-[10px]'>周遊券OK</span>" },
                         { "time": "13:30", "type": "activity", "name": "🗿 雕刻之森", "desc": "日本首座戶外美術館，周遊券可折 ¥200。", "location": "Hakone Open-Air Museum", "tag": "推薦",
                           "history": "1969 年開幕，是日本第一座戶外美術館，館內有畢卡索、亨利摩爾等大師作品，戶外展區免費走動。",
                           "tips": "憑箱根周遊券門票折抵 ¥200。館內有足湯，記得帶毛巾！",
                           "transportDetail": "🔹路線：強羅 ➔ 雕刻之森（步行或電車一站）<br>🔹<span class='bg-orange-100 text-orange-600 px-1 rounded text-[10px]'>周遊券OK</span>" },
-                        { "time": "16:30", "type": "hotel", "name": "♨️ 溫泉 Check-in", "desc": "一泊二食旅館，享用溫泉與晚餐。", "location": "Hakone Mizunoto",
+                        { "time": "16:30", "type": "hotel", "name": "♨️ 溫泉 Check-in · 取回行李", "desc": "Check-in 後行李已送達房間，直接換浴衣享用溫泉與晚餐！", "location": "Hakone Mizunoto",
                           "transportDetail": "🔹新宿站搭小田急特急（浪漫特快）約 1.5 小時 → 箱根湯本站<br>🔹換乘箱根登山電車約 30 分 → 小涌谷站下車<br>🔹搭乘旅館接駁巴士約 3 分鐘即達<br>🔸<b>接駁巴士時間：下午 2 時 ～ 下午 5 時</b>（請配合班次）",
                           "taxi": { "jpName": "箱根小涌谷温泉 水の音", "address": "神奈川県足柄下郡箱根町小涌谷492-23" } }
                     ]
                 },
                 {
                     "shortTitle": "D3 3/16", "title": "Day 3: 海盜船 & 回東京", "hotel": "APA Otsuka",
-                    "wakeUp": { "time": "08:00", "reason": "享用旅館早餐後，09:30 出發大涌谷" },
+                    "wakeUp": { "time": "08:00", "reason": "10:00 前需完成行李托運交件，請早起整理" },
                     "events": [
-                        { "time": "08:00", "type": "wake", "name": "🌅 起床", "desc": "享用旅館附早餐，整理行李寄放櫃檯（行李宅急便寄回大塚飯店）。", "noNav": true,
-                          "tips": "可在旅館 Check-out 時請服務人員安排行李宅急便至大塚 APA，費用約 ¥1500-2000/件，省去今天帶著行李跑的麻煩。" },
+                        { "time": "08:00", "type": "wake", "name": "🌅 起床 · 整理行李托運", "desc": "早餐後將行李寄回旅館櫃檯，辦理托運至箱根湯本站，⚠ 10:00 前完成交件。", "noNav": true,
+                          "tips": "🧳 <b>D3 行李托運流程</b><br>① 早餐後將行李交至旅館 Front Desk<br>② 告知托運目的地：箱根湯本站（行李寄放服務）<br>③ ⚠ <b>交件截止 10:00</b>，請務必在出發大涌谷前完成<br>④ 指定下午領取時段：<b>13:30 以後在箱根湯本站領取</b><br>⑤ ⚠ <b>需事先確認</b>：當日可在箱根湯本站領取的最晚時間，避免等太久<br><a href='https://www.hakonenavi.jp/hakone-luggage-transport-service/tw/' target='_blank' class='text-sky-400 underline font-bold'>📦 箱根行李托運官網（確認時段）→</a>" },
                         { "time": "09:30", "type": "activity", "name": "🌋 大涌谷", "desc": "火山地形，吃黑蛋、遠眺富士山。", "location": "Owakudani",
                           "transportDetail": "🔹路線：強羅 ➔ 早雲山 ➔ 大涌谷（箱根空中纜車）<br>🔹<span class='bg-orange-100 text-orange-600 px-1 rounded text-[10px]'>周遊券OK</span><br>🔹注意：火山活動旺盛時纜車可能停駛，請當天確認" },
                         { "time": "11:00", "type": "activity", "name": "⛵ 箱根海盜船", "desc": "遊蘆之湖，欣賞富士山倒影。", "location": "Togendai",
                           "transportDetail": "🔹路線：大涌谷 ➔ 桃源台搭海盜船 ➔ 元箱根港<br>🔹<span class='bg-orange-100 text-orange-600 px-1 rounded text-[10px]'>周遊券OK</span><br>🔹船程約 30–40 分鐘" },
                         { "time": "13:00", "type": "food", "name": "🍣 元箱根午餐", "desc": "元箱根港附近用餐後準備回程。", "location": "Moto-Hakone",
                           "restaurants": [{ "name": "はこね市場", "dish": "海鮮定食", "area": "Moto-Hakone", "price": "1500-2500", "queue": "15-30分" }, { "name": "甘酒茶屋", "dish": "黑糖甘酒 + 烤麻糬", "area": "Moto-Hakone", "price": "500-1000", "queue": "即點即取" }] },
-                        { "time": "14:30", "type": "transport", "name": "🚃 回東京", "desc": "元箱根巴士→箱根湯本→浪漫特快→新宿→大塚。", "location": "Hakone Yumoto",
-                          "transportDetail": "🔹步驟1：元箱根港 ➔ 箱根湯本（登山巴士 H線/K線，約 35 分）<br>🔹步驟2：箱根湯本站取回行李（若有寄放）<br>🔹步驟3：箱根湯本 ➔ 新宿（浪漫特快，約 85 分，約 17:00 抵達）<br>🔹步驟4：新宿 ➔ 大塚（JR山手線，約 15 分）<br>⚠️ <b>整段約需 2.5–3 小時，18:00 前可抵大塚</b>",
+                        { "time": "14:30", "type": "transport", "name": "🚃 回東京 · 箱根湯本取行李", "desc": "元箱根巴士→箱根湯本取行李→浪漫特快→新宿→大塚。", "location": "Hakone Yumoto",
+                          "transportDetail": "🔹步驟1：元箱根港 ➔ 箱根湯本（登山巴士 H線/K線，約 35 分）<br>🔹步驟2：<b>箱根湯本站取回行李</b>（13:30 後可領，⚠ 請事先確認最晚領取時間）<br>🔹步驟3：箱根湯本 ➔ 新宿（浪漫特快，約 85 分，約 17:00 抵達）<br>🔹步驟4：新宿 ➔ 大塚（JR山手線，約 15 分）<br><br>⚠️ <b>行李領取注意</b>：出發前請致電或上官網確認箱根湯本站的下午領取時段，以免耽誤回程班車<br>🔹<a href='https://www.hakonenavi.jp/hakone-luggage-transport-service/tw/' target='_blank' class='text-sky-400 underline font-bold'>📦 箱根行李托運官網 →</a><br><br>⏱ <b>整段約需 2.5–3 小時，18:00 前可抵大塚</b>",
                           "luggageInfo": { "summary": "新宿轉乘走「南口」，電梯直達 JR。", "steps": [{ "text": "浪漫特快抵新宿，往車頭方向走搭電梯至「南口改札」。" }, { "text": "出小田急南口，正對面即「JR 新宿站 南口」。" }, { "text": "進 JR 後尋找「山手線 14/15 月台」電梯（月台中央）。" }, { "text": "抵大塚站走「北口」，APA 飯店步行約 3 分鐘。" }] } },
                         { "time": "18:30", "type": "food", "name": "🍙 大塚晚餐", "desc": "Onigiri Bongo 飯糰或鳴龍擔擔麵。", "location": "Otsuka", "tag": "必吃",
                           "restaurants": [ { "name": "Onigiri Bongo", "dish": "筋子 + 鮭魚飯糰", "area": "Otsuka", "price":"1000-1500", "queue":"2-4小時（建議外帶）" }, { "name": "鳴龍", "dish": "擔擔麵", "area": "Otsuka", "price":"1000-1500", "queue":"60-90分" }, { "name": "天下壽司", "dish": "迴轉壽司", "area": "Otsuka", "price":"1500-2500", "queue":"10-20分" } ],
@@ -1283,7 +1291,14 @@
                 }
             ];
 
-            const defaultPrepData = { ticketsWallet: { 'Skyliner': '', 'Disney': '', 'Hotel': '', 'VJW': '' }, tickets: [ { name: 'N\'EX 成田特快', desc: '機場 ➔ 新宿', link: 'https://www.jreast.co.jp/multi/zh-CHT/nex/' }, { name: 'Skyliner', desc: '上野 ➔ 機場', link: 'https://www.keisei.co.jp/keisei/tetudou/skyliner/tc/' }, { name: '箱根周遊券 (2日)', desc: '新宿小田急旅遊中心', link: 'https://www.odakyu.jp/tc/passes/hakone/' }, { name: '浪漫特快 (特急券)', desc: '需劃位 (展望席)', link: 'https://www.web-odakyu.com/e-romancecar/' }, { name: '蕃 YORONIKU', desc: '2/1 搶訂 18:30', link: 'https://tabelog.com/tw/tokyo/A1303/A130302/13211927/' }, { name: 'SHIBUYA SKY', desc: '預約 15:00-16:00', link: 'https://www.shibuya-scramble-square.com/sky/ticket/zh_tw/' } ], luggage: { '證件': [{ name: '護照', checked: false }, { name: 'Visit Japan Web (入境通關 QR Code)', checked: false }, { name: '日幣/信用卡', checked: false }, { name: '西瓜卡', checked: false }], '電子': [{ name: '網卡/eSim', checked: false }, { name: '行動電源', checked: false }, { name: '充電組', checked: false }], '生活': [{ name: '衣物 (5天)', checked: false }, { name: '好走的鞋', checked: false }, { name: '牙刷/藥品', checked: false }] }, shopping: { '藥妝與保健': [ { name: '合力他命 EX Plus', desc: '緩解疲勞 (每人限購)', checked: false }, { name: 'EVE 止痛藥 (藍/白)', desc: '頭痛生理痛神藥', checked: false }, { name: 'Wakamoto 若元錠', desc: '腸胃保健', checked: false }, { name: 'DHC 護唇膏', desc: '便宜好用', checked: false }, { name: '眼藥水 (Lycee/參天)', desc: '涼感/小花', checked: false } ], '零食與伴手禮': [ { name: 'Tokyo Banana', desc: '經典東京香蕉蛋糕', checked: false }, { name: 'NY Perfect Cheese', desc: '起司脆餅 (機場/東京站)', checked: false }, { name: 'Royce 生巧克力', desc: '需冷藏 (機場買)', checked: false }, { name: '白色戀人', desc: '北海道名產 (機場有)', checked: false } ], '服飾與其他': [ { name: 'Uniqlo 發熱衣', desc: '比台灣便宜很多', checked: false }, { name: 'New Balance', desc: '日本限定配色', checked: false } ] } };
+            const defaultPrepData = { ticketsWallet: { 
+  '🚃 浪漫特快': 'E268 • 1號車 3C & 3D', 
+  '🏨 新宿APA': '訂位 1687183369 • 3/14 15:00 IN / 10:00 OUT', 
+  '🏨 箱根水之音': '訂位 WWL3P93S • 3/15 15:00 IN / 11:00 OUT', 
+  '🏨 大塚APA': '（訂位代號待填）• 3/16 15:00 IN / 11:00 OUT', 
+  '🥩 YORONIKU': 'RVE6RT5EQS', 
+  '✈️ VJW 入境通關': 'https://www.vjw.digital.go.jp/main/#/vjwplo001'
+}, tickets: [ { name: 'N\'EX 成田特快', desc: '機場 ➔ 新宿', link: 'https://www.jreast.co.jp/multi/zh-CHT/nex/' }, { name: 'Skyliner', desc: '上野 ➔ 機場', link: 'https://www.keisei.co.jp/keisei/tetudou/skyliner/tc/' }, { name: '箱根周遊券 (2日)', desc: '新宿小田急旅遊中心', link: 'https://www.odakyu.jp/tc/passes/hakone/' }, { name: '浪漫特快 (特急券)', desc: '需劃位 (展望席)', link: 'https://www.web-odakyu.com/e-romancecar/' }, { name: '蕃 YORONIKU', desc: '2/1 搶訂 18:30', link: 'https://tabelog.com/tw/tokyo/A1303/A130302/13211927/' }, { name: 'SHIBUYA SKY', desc: '預約 15:00-16:00', link: 'https://www.shibuya-scramble-square.com/sky/ticket/zh_tw/' } ], luggage: { '證件': [{ name: '護照', checked: false }, { name: 'Visit Japan Web (入境通關 QR Code)', checked: false }, { name: '日幣/信用卡', checked: false }, { name: '西瓜卡', checked: false }], '電子': [{ name: '網卡/eSim', checked: false }, { name: '行動電源', checked: false }, { name: '充電組', checked: false }], '生活': [{ name: '衣物 (5天)', checked: false }, { name: '好走的鞋', checked: false }, { name: '牙刷/藥品', checked: false }] }, shopping: { '藥妝與保健': [ { name: '合力他命 EX Plus', desc: '緩解疲勞 (每人限購)', checked: false }, { name: 'EVE 止痛藥 (藍/白)', desc: '頭痛生理痛神藥', checked: false }, { name: 'Wakamoto 若元錠', desc: '腸胃保健', checked: false }, { name: 'DHC 護唇膏', desc: '便宜好用', checked: false }, { name: '眼藥水 (Lycee/參天)', desc: '涼感/小花', checked: false } ], '零食與伴手禮': [ { name: 'Tokyo Banana', desc: '經典東京香蕉蛋糕', checked: false }, { name: 'NY Perfect Cheese', desc: '起司脆餅 (機場/東京站)', checked: false }, { name: 'Royce 生巧克力', desc: '需冷藏 (機場買)', checked: false }, { name: '白色戀人', desc: '北海道名產 (機場有)', checked: false } ], '服飾與其他': [ { name: 'Uniqlo 發熱衣', desc: '比台灣便宜很多', checked: false }, { name: 'New Balance', desc: '日本限定配色', checked: false } ] } };
             
             let initialData = defaultPrepData;
             let initialMoney = [];
@@ -1323,7 +1338,7 @@
                 // ✅ FIX: simulatedTime 在 return 物件內宣告
                 simulatedTime: null,
                 activeEventId: null,
-                statusMsg: 'v51 • Made with ❤️',
+                statusMsg: 'v53 • Made with ❤️',
 
                 phrases: { food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ], shop: [ { jp: 'いくらですか？', cn: '請問多少錢？', romaji: 'Ikura desuka?' }, { jp: 'クレジットカードは使えますか？', cn: '可用信用卡嗎？', romaji: 'Kurejitto kaado wa tsukaemasuka?' }, { jp: '新しい在庫はありますか？', cn: '有新庫存嗎？', romaji: 'Atarashii zaiko wa arimasuka?' }, { jp: '免税できますか？', cn: '可免稅嗎？', romaji: 'Menzei dekimasuka?' }, { jp: '袋を買います', cn: '買袋子', romaji: 'Fukuro o kaimasu' } ], help: [ { jp: '駅はどこですか？', cn: '車站在哪裡？', romaji: 'Eki wa doko desuka?' }, { jp: '写真を撮ってもらえますか？', cn: '可以幫我拍照嗎？', romaji: 'Shashin o totte moraemasuka?' }, { jp: 'すみません', cn: '不好意思 / 借過', romaji: 'Sumimasen' }, { jp: '道に迷いました', cn: '我迷路了', romaji: 'Michi ni mayoimashita' }, { jp: 'トイレはどこ？', cn: '廁所在哪？', romaji: 'Toire wa doko?' } ] },
 
