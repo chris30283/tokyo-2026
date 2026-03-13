@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     
-    <title>2026 東京賞櫻 (v50)</title>
+    <title>2026 東京賞櫻 (v51)</title>
     
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -168,47 +168,6 @@
                 <button @click="quickAsk('明天天氣如何？適合去哪？')" class="flex-shrink-0 text-[10px] bg-indigo-50 text-indigo-600 font-bold px-3 py-1.5 rounded-full border border-indigo-100 active:scale-95 transition-transform">🌤 明天行程</button>
                 <button @click="quickAsk('幫我推薦今天附近的午餐選擇')" class="flex-shrink-0 text-[10px] bg-orange-50 text-orange-600 font-bold px-3 py-1.5 rounded-full border border-orange-100 active:scale-95 transition-transform">🍜 附近午餐</button>
                 <button @click="quickAsk('西瓜卡餘額不夠，去哪裡加值？')" class="flex-shrink-0 text-[10px] bg-green-50 text-green-600 font-bold px-3 py-1.5 rounded-full border border-green-100 active:scale-95 transition-transform">💳 西瓜卡加值</button>
-            </div>
-
-            <!-- 圖片辨識入口（無圖時） -->
-            <div x-show="!pendingImage" class="px-3 pt-2 pb-1">
-                <!-- Banner 提示 -->
-                <div class="bg-gradient-to-r from-violet-500 to-indigo-500 rounded-2xl p-3 mb-2 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                        <i class="ph-fill ph-camera text-white text-xl"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-white font-bold text-xs">拍照 / 上傳圖片</div>
-                        <div class="text-white/70 text-[10px] mt-0.5">菜單・告示牌・藥品・地圖 → 即時辨識翻譯</div>
-                    </div>
-                    <div class="flex gap-1.5 flex-shrink-0">
-                        <button @click="document.getElementById('chatCameraCapture').click()"
-                                class="flex flex-col items-center justify-center gap-0.5 bg-white rounded-xl px-3 py-2 active:scale-90 transition-transform shadow-sm">
-                            <i class="ph-fill ph-camera text-violet-600 text-lg"></i>
-                            <span class="text-[9px] font-bold text-violet-600">拍照</span>
-                        </button>
-                        <button @click="document.getElementById('chatImageUpload').click()"
-                                class="flex flex-col items-center justify-center gap-0.5 bg-white/20 border border-white/30 rounded-xl px-3 py-2 active:scale-90 transition-transform">
-                            <i class="ph-fill ph-images text-white text-lg"></i>
-                            <span class="text-[9px] font-bold text-white">相簿</span>
-                        </button>
-                    </div>
-                </div>
-                <!-- 場景快捷 -->
-                <div class="flex gap-1.5">
-                    <button @click="document.getElementById('chatCameraCapture').click(); chatInput = '請完整翻譯菜單所有內容，並幫我推薦好吃的料理'"
-                            class="flex-1 text-[10px] bg-orange-50 text-orange-600 font-bold py-2 rounded-xl border border-orange-100 active:scale-95 transition-transform">
-                        🍱 菜單翻譯
-                    </button>
-                    <button @click="document.getElementById('chatCameraCapture').click(); chatInput = '請翻譯並解釋這個告示牌的意思，有什麼需要注意的？'"
-                            class="flex-1 text-[10px] bg-sky-50 text-sky-600 font-bold py-2 rounded-xl border border-sky-100 active:scale-95 transition-transform">
-                        🪧 告示翻譯
-                    </button>
-                    <button @click="document.getElementById('chatCameraCapture').click(); chatInput = '幫我辨識這個藥品包裝或說明書的內容，這是什麼藥？怎麼使用？'"
-                            class="flex-1 text-[10px] bg-emerald-50 text-emerald-600 font-bold py-2 rounded-xl border border-emerald-100 active:scale-95 transition-transform">
-                        💊 藥品辨識
-                    </button>
-                </div>
             </div>
 
             <!-- 圖片預覽區（有圖時） -->
@@ -1364,7 +1323,7 @@
                 // ✅ FIX: simulatedTime 在 return 物件內宣告
                 simulatedTime: null,
                 activeEventId: null,
-                statusMsg: 'v50 • Made with ❤️',
+                statusMsg: 'v51 • Made with ❤️',
 
                 phrases: { food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ], shop: [ { jp: 'いくらですか？', cn: '請問多少錢？', romaji: 'Ikura desuka?' }, { jp: 'クレジットカードは使えますか？', cn: '可用信用卡嗎？', romaji: 'Kurejitto kaado wa tsukaemasuka?' }, { jp: '新しい在庫はありますか？', cn: '有新庫存嗎？', romaji: 'Atarashii zaiko wa arimasuka?' }, { jp: '免税できますか？', cn: '可免稅嗎？', romaji: 'Menzei dekimasuka?' }, { jp: '袋を買います', cn: '買袋子', romaji: 'Fukuro o kaimasu' } ], help: [ { jp: '駅はどこですか？', cn: '車站在哪裡？', romaji: 'Eki wa doko desuka?' }, { jp: '写真を撮ってもらえますか？', cn: '可以幫我拍照嗎？', romaji: 'Shashin o totte moraemasuka?' }, { jp: 'すみません', cn: '不好意思 / 借過', romaji: 'Sumimasen' }, { jp: '道に迷いました', cn: '我迷路了', romaji: 'Michi ni mayoimashita' }, { jp: 'トイレはどこ？', cn: '廁所在哪？', romaji: 'Toire wa doko?' } ] },
 
