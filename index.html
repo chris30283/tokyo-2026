@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     
-    <title>2026 東京賞櫻 (v54)</title>
+    <title>2026 東京賞櫻 (v56)</title>
     
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -123,13 +123,38 @@
             <div x-show="showKeySettings || !apiKey" class="bg-slate-100 p-4 border-b border-slate-200 overflow-y-auto" style="max-height: 50vh;">
                 <label class="text-xs font-bold text-slate-500 mb-1 block">Google Gemini API Key</label>
                 <input type="text" x-model="apiKeyTemp" placeholder="AIza..." class="w-full rounded-lg border border-slate-300 p-2 text-xs mb-3 bg-white outline-none">
-                <label class="text-xs font-bold text-slate-500 mb-1 block">模型 ID</label>
-                <input type="text" x-model="modelIdTemp" placeholder="gemini-2.5-flash" class="w-full rounded-lg border border-slate-300 p-2 text-xs mb-3 bg-white font-mono outline-none">
-                <button @click="checkModels()" class="w-full bg-blue-500 text-white text-xs font-bold py-2 rounded-lg mb-3 shadow">偵測可用模型</button>
-                <div x-show="availableModels.length > 0" class="mb-3 flex flex-wrap gap-1">
-                    <template x-for="m in availableModels">
-                        <button @click="modelIdTemp = m; saveSettings()" class="text-[10px] bg-white border border-green-200 text-green-700 px-2 py-1 rounded truncate hover:bg-green-50"><span x-text="m"></span></button>
-                    </template>
+                <label class="text-xs font-bold text-slate-500 mb-1 block">模型選擇</label>
+                <div class="grid grid-cols-1 gap-1.5 mb-3">
+                    <button @click="modelIdTemp = 'gemini-2.5-flash'; saveSettings()"
+                            class="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left"
+                            :class="modelId === 'gemini-2.5-flash' ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white'">
+                        <span class="text-lg">⚡</span>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-xs font-bold text-slate-800">2.5 Flash <span class="text-[10px] text-indigo-500 font-bold ml-1">推薦</span></div>
+                            <div class="text-[10px] text-slate-400">快速 • 圖片辨識 • 250次/天</div>
+                        </div>
+                        <i x-show="modelId === 'gemini-2.5-flash'" class="ph-fill ph-check-circle text-indigo-500"></i>
+                    </button>
+                    <button @click="modelIdTemp = 'gemini-2.5-pro'; saveSettings()"
+                            class="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left"
+                            :class="modelId === 'gemini-2.5-pro' ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white'">
+                        <span class="text-lg">🧠</span>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-xs font-bold text-slate-800">2.5 Pro</div>
+                            <div class="text-[10px] text-slate-400">最強推理 • 複雜問題 • 100次/天</div>
+                        </div>
+                        <i x-show="modelId === 'gemini-2.5-pro'" class="ph-fill ph-check-circle text-indigo-500"></i>
+                    </button>
+                    <button @click="modelIdTemp = 'gemini-2.5-flash-lite'; saveSettings()"
+                            class="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left"
+                            :class="modelId === 'gemini-2.5-flash-lite' ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white'">
+                        <span class="text-lg">🪶</span>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-xs font-bold text-slate-800">2.5 Flash Lite</div>
+                            <div class="text-[10px] text-slate-400">省額度 • 日常翻譯對話 • 1000次/天</div>
+                        </div>
+                        <i x-show="modelId === 'gemini-2.5-flash-lite'" class="ph-fill ph-check-circle text-indigo-500"></i>
+                    </button>
                 </div>
                 <button @click="saveSettings()" class="bg-indigo-500 text-white text-xs font-bold px-3 py-3 rounded-lg w-full active:scale-95 transition-transform shadow-md">儲存設定</button>
             </div>
@@ -1205,7 +1230,7 @@
                     ]
                 },
                 {
-                    "shortTitle": "D3 3/16", "title": "Day 3: 海盜船 & 回東京", "hotel": "APA Otsuka",
+                    "shortTitle": "D3 3/16", "title": "Day 3: 海盜船 & 新宿", "hotel": "APA Otsuka",
                     "wakeUp": { "time": "08:00", "reason": "10:00 前需完成行李托運交件，請早起整理" },
                     "events": [
                         { "time": "08:00", "type": "wake", "name": "🌅 起床 · 整理行李托運", "desc": "早餐後將行李寄回旅館櫃檯，辦理托運至箱根湯本站，⚠ 10:00 前完成交件。", "noNav": true,
@@ -1216,12 +1241,32 @@
                           "transportDetail": "🔹路線：大涌谷 ➔ 桃源台搭海盜船 ➔ 元箱根港<br>🔹<span class='bg-orange-100 text-orange-600 px-1 rounded text-[10px]'>周遊券OK</span><br>🔹船程約 30–40 分鐘" },
                         { "time": "13:00", "type": "food", "name": "🍣 元箱根午餐", "desc": "元箱根港附近用餐後準備回程。", "location": "Moto-Hakone",
                           "restaurants": [{ "name": "はこね市場", "dish": "海鮮定食", "area": "Moto-Hakone", "price": "1500-2500", "queue": "15-30分" }, { "name": "甘酒茶屋", "dish": "黑糖甘酒 + 烤麻糬", "area": "Moto-Hakone", "price": "500-1000", "queue": "即點即取" }] },
-                        { "time": "14:30", "type": "transport", "name": "🚃 回東京 · 箱根湯本取行李", "desc": "元箱根巴士→箱根湯本取行李→浪漫特快→新宿→大塚。", "location": "Hakone Yumoto",
-                          "transportDetail": "🔹步驟1：元箱根港 ➔ 箱根湯本（登山巴士 H線/K線，約 35 分）<br>🔹步驟2：<b>箱根湯本站取回行李</b>（13:30 後可領，⚠ 請事先確認最晚領取時間）<br>🔹步驟3：箱根湯本 ➔ 新宿（浪漫特快，約 85 分，約 17:00 抵達）<br>🔹步驟4：新宿 ➔ 大塚（JR山手線，約 15 分）<br><br>⚠️ <b>行李領取注意</b>：出發前請致電或上官網確認箱根湯本站的下午領取時段，以免耽誤回程班車<br>🔹<a href='https://www.hakonenavi.jp/hakone-luggage-transport-service/tw/' target='_blank' class='text-sky-400 underline font-bold'>📦 箱根行李托運官網 →</a><br><br>⏱ <b>整段約需 2.5–3 小時，18:00 前可抵大塚</b>",
-                          "luggageInfo": { "summary": "新宿轉乘走「南口」，電梯直達 JR。", "steps": [{ "text": "浪漫特快抵新宿，往車頭方向走搭電梯至「南口改札」。" }, { "text": "出小田急南口，正對面即「JR 新宿站 南口」。" }, { "text": "進 JR 後尋找「山手線 14/15 月台」電梯（月台中央）。" }, { "text": "抵大塚站走「北口」，APA 飯店步行約 3 分鐘。" }] } },
-                        { "time": "18:30", "type": "food", "name": "🍙 大塚晚餐", "desc": "Onigiri Bongo 飯糰或鳴龍擔擔麵。", "location": "Otsuka", "tag": "必吃",
-                          "restaurants": [ { "name": "Onigiri Bongo", "dish": "筋子 + 鮭魚飯糰", "area": "Otsuka", "price":"1000-1500", "queue":"2-4小時（建議外帶）" }, { "name": "鳴龍", "dish": "擔擔麵", "area": "Otsuka", "price":"1000-1500", "queue":"60-90分" }, { "name": "天下壽司", "dish": "迴轉壽司", "area": "Otsuka", "price":"1500-2500", "queue":"10-20分" } ],
-                          "taxi": { "jpName": "APAホテル 山手大塚駅タワー", "address": "東京都豊島区南大塚3-31-10" } }
+                        { "time": "14:30", "type": "transport", "name": "🚃 回新宿 · 箱根湯本取行李", "desc": "元箱根巴士→箱根湯本取行李→浪漫特快→新宿東口。", "location": "Hakone Yumoto",
+                          "transportDetail": "🔹步驟1：元箱根港 ➔ 箱根湯本（登山巴士，約 35 分）<br>🔹步驟2：<b>箱根湯本站取回行李</b>（13:30 後可領，⚠ 請事先確認最晚領取時間）<br>🔹步驟3：箱根湯本 ➔ 新宿（浪漫特快，約 85 分，約 17:00 抵）<br>🔹<a href='https://www.hakonenavi.jp/hakone-luggage-transport-service/tw/' target='_blank' class='text-sky-400 underline font-bold'>📦 箱根行李托運官網 →</a>",
+                          "luggageInfo": { "summary": "抵新宿東口後，行李寄置物櫃輕裝逛街！", "steps": [{ "text": "浪漫特快抵新宿，穿地下道往東口方向出站。" }, { "text": "東口附近 ecbo cloak 寄放行李（建議 App 預約，約 ¥700/件）。" }, { "text": "Biju Mam → Lumine Est 一帶就在東口步行範圍內！" }] } },
+                        { "time": "17:15", "type": "activity", "name": "💍 新宿飾品 & 購物", "desc": "東口一帶飾品店集中，Biju Mam 指定必逛，再接 Lumine Est、RIN 串起來超順！", "location": "Shinjuku East Exit",
+                          "shopping": [
+                            { "name": "💍 Biju Mam（指定）", "items": "飾品專門店，東口步行 3 分，高評價選品" },
+                            { "name": "🏬 Lumine Est（飾品區）", "items": "東口直結車站，內含多間飾品品牌，邊逛邊找" },
+                            { "name": "💿 RIN（ボディピアス）", "items": "耳環飾品專門店 4.8★，丸井 Annex 3F，步行 4 分" },
+                            { "name": "🖤 新宿丸井 Annex", "items": "個性派、哥德系飾品，RIN 同棟" }
+                          ] },
+                        { "time": "18:30", "type": "food", "name": "🍻 新宿晚餐", "desc": "思い出横丁昭和串燒居酒屋，箱根歸來喝一杯最對味！", "location": "Shinjuku West Exit",
+                          "restaurants": [
+                            { "name": "思い出横丁（回憶小路）", "dish": "串燒 + 生啤酒", "area": "新宿西口步行 2 分", "price": "2000-3000", "queue": "平日即入，假日稍候" },
+                            { "name": "鳥良 新宿店", "dish": "炸雞、串燒", "area": "新宿", "price": "2000-3000", "queue": "15-30分" },
+                            { "name": "叙叙苑 新宿店", "dish": "和牛燒肉", "area": "新宿", "price": "5000-8000", "queue": "建議預約" }
+                          ],
+                          "transportDetail": "🔹思い出横丁：從東口往西口步行約 10 分，或搭站內地下道<br>🔹⚠ 晚餐後記得取回寄放行李" },
+                        { "time": "19:45", "type": "transport", "name": "🚆 新宿取行李 → 大塚 Check-in", "desc": "取回行李後搭山手線到大塚，先 Check-in 放行李換件衣服再出門。", "location": "Otsuka",
+                          "transportDetail": "🔹取行李：東口 ecbo cloak 門市<br>🔹新宿 ➔ 大塚（JR山手線，約 15 分）<br>🔹大塚站北口出，APA 步行約 3 分鐘",
+                          "taxi": { "jpName": "APAホテル 山手大塚駅タワー", "address": "東京都豊島区南大塚3-31-10" } },
+                        { "time": "20:15", "type": "food", "name": "🏮 大塚居酒屋（選擇性）", "desc": "Check-in 梳洗後若還有力氣，大塚北口有道地居酒屋，無觀光客、本地人聚集。", "location": "Otsuka",
+                          "restaurants": [
+                            { "name": "もつ焼き 江戸一", "dish": "內臟串燒 + 啤酒", "area": "大塚北口", "price": "1500-2500", "queue": "即入" },
+                            { "name": "SAMA（サマ）", "dish": "沖繩料理 + 泡盛", "area": "大塚北口", "price": "2000-3000", "queue": "建議預約" },
+                            { "name": "鳥貴族", "dish": "均一 ¥370 串燒", "area": "大塚", "price": "1500-2000", "queue": "即入" }
+                          ] }
                     ]
                 },
                 {
@@ -1232,16 +1277,28 @@
                         { "time": "09:30", "type": "activity", "name": "⛩️ 明治神宮", "desc": "晨間散步，感受靜謐森林氛圍。", "location": "Meiji Jingu",
                           "transportDetail": "🔹路線：大塚 ➔ 原宿（JR山手線，約 20 分）<br>🔹步行：原宿站步行 5 分鐘至神宮入口",
                           "history": "明治神宮建於 1920 年，供奉明治天皇。境內有約 7 萬棵樹木，是東京市中心的綠色聖地。" },
-                        { "time": "11:00", "type": "activity", "name": "🛍️ 原宿逛街", "desc": "竹下通、表參道，美妝購物天堂。", "location": "Harajuku",
-                          "shopping": [ { "name": "@cosme TOKYO", "items": "最新美妝、限定款" }, { "name": "KIDDY LAND", "items": "玩具、三麗鷗" }, { "name": "Human Made", "items": "潮牌、限定聯名" } ] },
+                        { "time": "11:00", "type": "activity", "name": "🛍️ 原宿逛街 · 飾品掃貨", "desc": "竹下通一帶飾品店超集中，Pocket 指定必逛，再串 Laforet、BOX CHARM，女友的天堂！", "location": "Harajuku",
+                          "shopping": [
+                            { "name": "💍 Pocket（指定）", "items": "原宿人氣飾品店，竹下通附近，選品豐富好逛" },
+                            { "name": "🏬 Laforet Harajuku", "items": "100+ 品牌潮流聖地，竹下通出來步行 2 分，各種風格都有" },
+                            { "name": "🎁 BOX CHARM Industry", "items": "可愛系盒裝飾品，TikTok 爆紅，原宿本店" },
+                            { "name": "🐱 MEOW Vintage & Jewelry", "items": "古著風飾品，獨特選品，適合找特別款" },
+                            { "name": "🛍️ @cosme TOKYO", "items": "最新美妝、限定款" },
+                            { "name": "🧸 KIDDY LAND", "items": "玩具、三麗鷗" }
+                          ] },
                         { "time": "13:00", "type": "food", "name": "🍔 原宿午餐", "desc": "在原宿或表參道附近用餐。", "location": "Harajuku",
                           "restaurants": [{ "name": "Eggs 'n Things 原宿", "dish": "鬆餅 Pancake", "area": "Harajuku", "price": "1500-2000", "queue": "30-60分" }, { "name": "Afuri 原宿", "dish": "柚子鹽拉麵", "area": "Harajuku", "price": "1200-1800", "queue": "15-30分" }] },
-                        { "time": "14:30", "type": "activity", "name": "🌆 SHIBUYA SKY", "desc": "澀谷展望台，360度無遮蔽視野（需預約）。", "location": "SHIBUYA SKY", "tag": "需預約",
-                          "tips": "頂樓風大，禁止攜帶腳架與帽子。建議 14:30 入場，可同時欣賞日景與傍晚景色。",
-                          "transportDetail": "🔹路線：原宿 ➔ 澀谷（JR山手線，1站，約 3 分）<br>🔹SHIBUYA SKY 在澀谷 SCRAMBLE SQUARE 14F 入口，45/46F 觀景台" },
+                        { "time": "14:00", "type": "activity", "name": "🐈 貓街（Cat Street）", "desc": "原宿往表參道的隱藏小巷，古著、潮牌、Select Shop 密集，比竹下通更有質感。", "location": "Cat Street Harajuku",
+                          "shopping": [ { "name": "Stussy Tokyo", "items": "限定款、日本限定配色" }, { "name": "Kith Tokyo", "items": "美式潮流旗艦" }, { "name": "古著 Select Shop 群", "items": "二手古著、獨立設計師品牌" }, { "name": "Human Made", "items": "Nigo 主理，貓街旁" } ],
+                          "transportDetail": "🔹從原宿午餐後步行 5 分鐘即到貓街入口<br>🔹全程約 600 公尺，慢慢走約 45–60 分鐘" },
+                        { "time": "15:00", "type": "activity", "name": "🏛️ 表參道 · Omotesando Hills", "desc": "安藤忠雄設計的螺旋型商場，沿表參道往南青山方向邊走邊逛，自然走到 Yoroniku 附近。", "location": "Omotesando Hills",
+                          "shopping": [ { "name": "Omotesando Hills", "items": "Maison Margiela、Theory、日本設計師品牌" }, { "name": "表參道大道精品", "items": "LV、Dior、Prada 旗艦店（街邊欣賞即可）" } ],
+                          "transportDetail": "🔹貓街步行接回表參道，往南青山方向走<br>🔹Omotesando Hills 在表參道中段，步行約 8 分鐘" },
+                        { "time": "16:00", "type": "food", "name": "☕ Blue Bottle Coffee 青山", "desc": "南青山旗艦店，安靜住宅區內的質感咖啡，坐下來等 Yoroniku 開門。距 Yoroniku 步行 5 分鐘。", "location": "Blue Bottle Coffee Aoyama",
+                          "transportDetail": "🔹從 Omotesando Hills 步行往南青山方向，約 10 分鐘<br>🔹喝完咖啡步行 5 分鐘即到 Yoroniku" },
                         { "time": "17:00", "type": "food", "name": "🥩 Yoroniku 燒肉", "desc": "南青山頂級燒肉，完全預約制。", "location": "Yoroniku", "tag": "需搶位",
                           "restaurants": [ { "name": "よろにく 南青山", "dish": "絲綢里肌 / 松露壽喜燒", "area": "Minami Aoyama", "price":"15000-20000", "queue":"完全預約制" } ],
-                          "transportDetail": "🔹路線：澀谷 ➔ 南青山（計程車約 10 分，費用約 ¥1000）",
+                          "transportDetail": "🔹路線：Blue Bottle 青山 ➔ Yoroniku（步行約 5 分鐘）<br>🔹完全不需搭車，整段下午都是步行路線 ✅",
                           "taxi": { "jpName": "よろにく 南青山", "address": "東京都港区南青山6-6-22" } },
                         { "time": "19:30", "type": "activity", "name": "🗼 東京鐵塔夜景", "desc": "Yoroniku 餐後搭計程車直奔東京鐵塔，夜景最美時段！", "location": "Tokyo Tower", "tag": "推薦",
                           "history": "東京鐵塔建於 1958 年，高 333 公尺，以巴黎艾菲爾鐵塔為靈感設計。Main Deck（150m）與 Top Deck（250m）均可俯瞰東京夜景，晚上的橘紅色燈光是東京最具代表性的地標之一。",
@@ -1338,7 +1395,7 @@
                 // ✅ FIX: simulatedTime 在 return 物件內宣告
                 simulatedTime: null,
                 activeEventId: null,
-                statusMsg: 'v54 • Made with ❤️',
+                statusMsg: 'v56 • Made with ❤️',
 
                 phrases: { food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ], shop: [ { jp: 'いくらですか？', cn: '請問多少錢？', romaji: 'Ikura desuka?' }, { jp: 'クレジットカードは使えますか？', cn: '可用信用卡嗎？', romaji: 'Kurejitto kaado wa tsukaemasuka?' }, { jp: '新しい在庫はありますか？', cn: '有新庫存嗎？', romaji: 'Atarashii zaiko wa arimasuka?' }, { jp: '免税できますか？', cn: '可免稅嗎？', romaji: 'Menzei dekimasuka?' }, { jp: '袋を買います', cn: '買袋子', romaji: 'Fukuro o kaimasu' } ], help: [ { jp: '駅はどこですか？', cn: '車站在哪裡？', romaji: 'Eki wa doko desuka?' }, { jp: '写真を撮ってもらえますか？', cn: '可以幫我拍照嗎？', romaji: 'Shashin o totte moraemasuka?' }, { jp: 'すみません', cn: '不好意思 / 借過', romaji: 'Sumimasen' }, { jp: '道に迷いました', cn: '我迷路了', romaji: 'Michi ni mayoimashita' }, { jp: 'トイレはどこ？', cn: '廁所在哪？', romaji: 'Toire wa doko?' } ] },
 
