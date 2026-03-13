@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/480/cherry-blossom.png">
     
-    <title>2026 東京賞櫻 (v53)</title>
+    <title>2026 東京賞櫻 (v54)</title>
     
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -1304,7 +1304,7 @@
             let initialMoney = [];
             
             try { 
-                const s = localStorage.getItem('tokyo_2026_fixed_v8'); 
+                const s = localStorage.getItem('tokyo_2026_fixed_v9'); 
                 if(s && s !== "undefined") initialData = JSON.parse(s); 
                 const m = localStorage.getItem('tokyo_2026_money_v1'); 
                 if(m && m !== "undefined") initialMoney = JSON.parse(m); 
@@ -1338,7 +1338,7 @@
                 // ✅ FIX: simulatedTime 在 return 物件內宣告
                 simulatedTime: null,
                 activeEventId: null,
-                statusMsg: 'v53 • Made with ❤️',
+                statusMsg: 'v54 • Made with ❤️',
 
                 phrases: { food: [ { jp: 'メニューをください', cn: '請給我菜單', romaji: 'Menyuu o kudasai' }, { jp: 'これをお願いします', cn: '我要點這個', romaji: 'Kore o onegaishimasu' }, { jp: 'お水をください', cn: '請給我水', romaji: 'Omizu o kudasai' }, { jp: 'お箸をください', cn: '請給我筷子', romaji: 'Ohashi o kudasai' }, { jp: 'とても美味しかったです', cn: '非常好吃', romaji: 'Totemo oishikatta desu' }, { jp: '氷なしでお願いします', cn: '去冰', romaji: 'Koori nashi de' }, { jp: 'お会計お願いします', cn: '買單', romaji: 'Okaikei onegaishimasu' } ], shop: [ { jp: 'いくらですか？', cn: '請問多少錢？', romaji: 'Ikura desuka?' }, { jp: 'クレジットカードは使えますか？', cn: '可用信用卡嗎？', romaji: 'Kurejitto kaado wa tsukaemasuka?' }, { jp: '新しい在庫はありますか？', cn: '有新庫存嗎？', romaji: 'Atarashii zaiko wa arimasuka?' }, { jp: '免税できますか？', cn: '可免稅嗎？', romaji: 'Menzei dekimasuka?' }, { jp: '袋を買います', cn: '買袋子', romaji: 'Fukuro o kaimasu' } ], help: [ { jp: '駅はどこですか？', cn: '車站在哪裡？', romaji: 'Eki wa doko desuka?' }, { jp: '写真を撮ってもらえますか？', cn: '可以幫我拍照嗎？', romaji: 'Shashin o totte moraemasuka?' }, { jp: 'すみません', cn: '不好意思 / 借過', romaji: 'Sumimasen' }, { jp: '道に迷いました', cn: '我迷路了', romaji: 'Michi ni mayoimashita' }, { jp: 'トイレはどこ？', cn: '廁所在哪？', romaji: 'Toire wa doko?' } ] },
 
@@ -1751,7 +1751,7 @@
                 slideTo(i) { this.swiperInstance?.slideTo(i); },
                 updateSwiperHeight() { setTimeout(() => { this.swiperInstance?.updateAutoHeight(300); this.swiperInstance?.update(); }, 100); },
                 toggleCheck(item) { item.checked = !item.checked; this.saveChecks(); },
-                saveChecks() { try { localStorage.setItem('tokyo_2026_fixed_v8', JSON.stringify(this.prepData)); } catch(e) {} },
+                saveChecks() { try { localStorage.setItem('tokyo_2026_fixed_v9', JSON.stringify(this.prepData)); } catch(e) {} },
 
                 addMoney() { 
                     if (!this.newMoney.title.trim()) { this.toast('請輸入項目名稱'); return; }
